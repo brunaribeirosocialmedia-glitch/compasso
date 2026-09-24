@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import App from './App'
 import './styles.css'
 import './styles-area-cliente.css'
+import './styles-prospeccao.css'
 
 const raiz = ReactDOM.createRoot(document.getElementById('root'))
 

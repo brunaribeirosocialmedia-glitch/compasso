@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import AreaProtegida from './components/AreaProtegida'
@@ -13,6 +13,8 @@ import Calendario from './components/cliente/Calendario'
 import BlocoDeNotas from './components/cliente/BlocoDeNotas'
 import Configuracoes from './components/cliente/Configuracoes'
 import Equipe from './pages/Equipe'
+import ListaProspects from './pages/prospeccao/ListaProspects'
+import PerfilProspect from './pages/prospeccao/PerfilProspect'
 import EmConstrucao from './pages/EmConstrucao'
 
 function TelaCheia({ children }) {
@@ -58,14 +60,10 @@ export default function App() {
             <Route path="notas" element={<BlocoDeNotas />} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
-          <Route
-            path="prospeccao"
-            element={
-              <AreaProtegida area="prospeccao">
-                <EmConstrucao titulo="Prospecção" etapa={4} descricao="O pipeline de vendas, com a lista de prospects e o perfil de cada um, chega na etapa 4." />
-              </AreaProtegida>
-            }
-          />
+          <Route path="prospeccao" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>
+            <Route index element={<ListaProspects />} />
+            <Route path=":prospectId" element={<PerfilProspect />} />
+          </Route>
           <Route
             path="financeiro"
             element={
