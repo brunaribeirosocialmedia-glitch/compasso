@@ -12,6 +12,17 @@ const caminhos = {
   sair: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
   menu: 'M3 6h18M3 12h18M3 18h18',
   fechar: 'M6 6l12 12M18 6 6 18',
+  mais: 'M12 5v14M5 12h14',
+  tarefas: 'M4 4h5v16H4zM10.5 4h5v10h-5zM17 4h3v7h-3z',
+  calendario: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
+  notas: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5',
+  config: 'M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4',
+  voltar: 'M15 18l-6-6 6-6',
+  avancar: 'M9 18l6-6-6-6',
+  alfinete: 'M9 4h6l-1 6 3 3H7l3-3zM12 13v8',
+  lixeira: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+  seta: 'M5 12h14M13 6l6 6-6 6',
+  busca: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4',
 }
 
 export default function Icone({ nome, tamanho = 20 }) {

@@ -1,6 +1,52 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { formatarData, situacaoPrazo } from '../lib/datas'
 import Icone from '../components/Icone'
+
+function MinhasTarefas({ usuarioId }) {
+  const [tarefas, setTarefas] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('tarefas')
+      .select('id, titulo, prazo, cliente_id, clientes(nome, cor)')
+      .eq('responsavel_id', usuarioId)
+      .is('concluida_em', null)
+      .order('prazo', { ascending: true, nullsFirst: false })
+      .limit(10)
+      .then(({ data }) => setTarefas(data || []))
+  }, [usuarioId])
+
+  if (!tarefas) return null
+  return (
+    <section className="cartao secao">
+      <h2>Minhas próximas tarefas</h2>
+      {tarefas.length === 0 ? (
+        <p className="texto-suave">Nenhuma tarefa em aberto com você.</p>
+      ) : (
+        <ul className="lista-minhas">
+          {tarefas.map((t) => {
+            const situacao = situacaoPrazo(t.prazo)
+            return (
+              <li key={t.id}>
+                <Link to={`/clientes/${t.cliente_id}/tarefas?tarefa=${t.id}`}>
+                  <span className="ponto" style={{ background: t.clientes?.cor || 'var(--texto-suave)' }} />
+                  <span className="minha-tarefa-titulo">{t.titulo}</span>
+                  <span className="texto-suave minha-tarefa-cliente">{t.clientes?.nome}</span>
+                  <span className={`prazo ${situacao}`}>
+                    {t.prazo ? (situacao === 'hoje' ? 'Hoje' : formatarData(t.prazo)) : 'Sem prazo'}
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
+  )
+}
 
 function saudacao() {
   const h = new Date().getHours()
@@ -8,7 +54,7 @@ function saudacao() {
 }
 
 export default function Inicio() {
-  const { perfil, permissoes } = useAuth()
+  const { session, perfil, permissoes } = useAuth()
   const primeiroNome = (perfil?.nome || '').split(' ')[0]
 
   const atalhos = [
@@ -34,6 +80,8 @@ export default function Inicio() {
           </Link>
         ))}
       </div>
+
+      <MinhasTarefas usuarioId={session.user.id} />
     </div>
   )
 }

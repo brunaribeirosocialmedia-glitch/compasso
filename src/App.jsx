@@ -7,6 +7,11 @@ import Login from './pages/Login'
 import DefinirSenha from './pages/DefinirSenha'
 import Inicio from './pages/Inicio'
 import Clientes from './pages/Clientes'
+import AreaCliente from './pages/AreaCliente'
+import Tarefas from './components/cliente/Tarefas'
+import Calendario from './components/cliente/Calendario'
+import BlocoDeNotas from './components/cliente/BlocoDeNotas'
+import Configuracoes from './components/cliente/Configuracoes'
 import Equipe from './pages/Equipe'
 import EmConstrucao from './pages/EmConstrucao'
 
@@ -46,6 +51,13 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Inicio />} />
           <Route path="clientes" element={<Clientes />} />
+          <Route path="clientes/:clienteId" element={<AreaCliente />}>
+            <Route index element={<Navigate to="tarefas" replace />} />
+            <Route path="tarefas" element={<Tarefas />} />
+            <Route path="calendario" element={<Calendario />} />
+            <Route path="notas" element={<BlocoDeNotas />} />
+            <Route path="configuracoes" element={<Configuracoes />} />
+          </Route>
           <Route
             path="prospeccao"
             element={

@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import App from './App'
 import './styles.css'
+import './styles-area-cliente.css'
 
 const raiz = ReactDOM.createRoot(document.getElementById('root'))
 
