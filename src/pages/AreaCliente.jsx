@@ -44,6 +44,7 @@ export default function AreaCliente() {
     { para: 'tarefas', nome: 'Tarefas', icone: 'tarefas' },
     { para: 'calendario', nome: 'Calendário', icone: 'calendario' },
     { para: 'notas', nome: 'Bloco de Notas', icone: 'notas' },
+    { para: 'quadro', nome: 'Quadro Branco', icone: 'quadro' },
     permissoes.admin && { para: 'configuracoes', nome: 'Configurações', icone: 'config' },
   ].filter(Boolean)
 

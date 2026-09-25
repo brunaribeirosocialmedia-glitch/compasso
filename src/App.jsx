@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
@@ -12,6 +13,8 @@ import Tarefas from './components/cliente/Tarefas'
 import Calendario from './components/cliente/Calendario'
 import BlocoDeNotas from './components/cliente/BlocoDeNotas'
 import Configuracoes from './components/cliente/Configuracoes'
+// o quadro é pesado: só é baixado quando alguém abre a aba
+const QuadroBranco = lazy(() => import('./components/cliente/QuadroBranco'))
 import Equipe from './pages/Equipe'
 import ListaProspects from './pages/prospeccao/ListaProspects'
 import PerfilProspect from './pages/prospeccao/PerfilProspect'
@@ -62,6 +65,7 @@ export default function App() {
             <Route path="tarefas" element={<Tarefas />} />
             <Route path="calendario" element={<Calendario />} />
             <Route path="notas" element={<BlocoDeNotas />} />
+            <Route path="quadro" element={<Suspense fallback={<p className="texto-suave recuo">Carregando o quadro…</p>}><QuadroBranco /></Suspense>} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="prospeccao" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>

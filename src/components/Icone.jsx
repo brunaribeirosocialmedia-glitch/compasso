@@ -16,6 +16,7 @@ const caminhos = {
   tarefas: 'M4 4h5v16H4zM10.5 4h5v10h-5zM17 4h3v7h-3z',
   calendario: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
   notas: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5',
+  quadro: 'M3 4h18v12H3zM12 16v4M8 20h8M7 12l3-3 2 2 4-4',
   config: 'M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4',
   voltar: 'M15 18l-6-6 6-6',
   avancar: 'M9 18l6-6-6-6',
