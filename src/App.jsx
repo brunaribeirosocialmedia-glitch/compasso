@@ -15,7 +15,11 @@ import Configuracoes from './components/cliente/Configuracoes'
 import Equipe from './pages/Equipe'
 import ListaProspects from './pages/prospeccao/ListaProspects'
 import PerfilProspect from './pages/prospeccao/PerfilProspect'
-import EmConstrucao from './pages/EmConstrucao'
+import Financeiro from './pages/financeiro/Financeiro'
+import VisaoGeral from './pages/financeiro/VisaoGeral'
+import Lancamentos from './pages/financeiro/Lancamentos'
+import Entregas from './pages/financeiro/Entregas'
+import Calculadora from './pages/financeiro/Calculadora'
 
 function TelaCheia({ children }) {
   return (
@@ -64,14 +68,13 @@ export default function App() {
             <Route index element={<ListaProspects />} />
             <Route path=":prospectId" element={<PerfilProspect />} />
           </Route>
-          <Route
-            path="financeiro"
-            element={
-              <AreaProtegida area="financeiro">
-                <EmConstrucao titulo="Financeiro" etapa={5} descricao="Faturamento, custos, colaboradores, pró-labore e a calculadora de precificação chegam na etapa 5." />
-              </AreaProtegida>
-            }
-          />
+          <Route path="financeiro" element={<AreaProtegida area="financeiro"><Financeiro /></AreaProtegida>}>
+            <Route index element={<Navigate to="visao-geral" replace />} />
+            <Route path="visao-geral" element={<VisaoGeral />} />
+            <Route path="entregas" element={<Entregas />} />
+            <Route path="calculadora" element={<Calculadora />} />
+            <Route path=":secao" element={<Lancamentos />} />
+          </Route>
           <Route path="equipe" element={<Equipe />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

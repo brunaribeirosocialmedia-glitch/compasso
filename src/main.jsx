@@ -7,6 +7,7 @@ import App from './App'
 import './styles.css'
 import './styles-area-cliente.css'
 import './styles-prospeccao.css'
+import './styles-financeiro.css'
 
 const raiz = ReactDOM.createRoot(document.getElementById('root'))
 

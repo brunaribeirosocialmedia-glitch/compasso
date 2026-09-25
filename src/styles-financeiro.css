@@ -1,0 +1,132 @@
+/* =====================================================================
+   Etapa 5 · Financeiro
+   Séries do gráfico validadas (daltonismo, contraste) nos dois modos:
+   claro  #5b4fd6 / #c4711c · escuro  #8577f5 / #bd7a33
+   ===================================================================== */
+
+:root, [data-theme='escuro'] {
+  --serie-faturamento: #8577f5;
+  --serie-custo: #bd7a33;
+  --positivo: #6fd6a2;
+  --aviso-fundo: rgba(242, 184, 75, 0.12);
+  --aviso-texto: #f2b84b;
+}
+[data-theme='claro'] {
+  --serie-faturamento: #5b4fd6;
+  --serie-custo: #c4711c;
+  --positivo: #17794a;
+  --aviso-fundo: #fdf3dc;
+  --aviso-texto: #8a5a00;
+}
+
+.financeiro-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.espaco-topo { margin-top: 24px; }
+.direita { text-align: right !important; }
+.valor { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.negativo { color: var(--erro) !important; }
+.alerta-aviso { background: var(--aviso-fundo); color: var(--aviso-texto); }
+.campo-largo { grid-column: 1 / -1; }
+.competencia-form { font-size: 0.88rem; }
+.explicacao { font-size: 0.88rem; max-width: 90ch; margin-bottom: 14px; }
+
+.totais { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.88rem; color: var(--texto-suave); }
+.totais strong { color: var(--texto); font-variant-numeric: tabular-nums; margin-left: 4px; }
+
+.selo-lancamento { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: 0.78rem; font-weight: 700; }
+.lanc-pago { color: var(--positivo); background: color-mix(in srgb, var(--positivo) 14%, transparent); }
+.lanc-pendente { color: var(--aviso-texto); background: var(--aviso-fundo); }
+.lanc-cancelado { color: var(--texto-suave); background: var(--realce); text-decoration: line-through; }
+
+.tabela-lancamentos { min-width: 720px; }
+.tabela-lancamentos td { font-size: 0.92rem; }
+.acoes-linha { text-align: right; white-space: nowrap; width: 1%; }
+.acoes-linha .botao-link { font-size: 0.82rem; }
+
+.margem { display: inline-flex; align-items: baseline; gap: 4px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.margem.positiva { color: var(--positivo); }
+.margem.negativa { color: var(--erro); }
+.margem small { font-weight: 600; }
+
+/* Visão geral */
+.visao-geral { display: flex; flex-direction: column; gap: 16px; padding: 24px 32px 0; }
+.numero strong.negativo { color: var(--erro); }
+.colunas-visao { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 1.6fr); gap: 16px; align-items: start; }
+
+.composicao { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.composicao-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 0.92rem; }
+.composicao-linha:hover span { text-decoration: underline; text-underline-offset: 3px; }
+.barra-proporcao { height: 6px; border-radius: 3px; background: var(--realce); margin-top: 6px; overflow: hidden; }
+.barra-proporcao span { display: block; height: 100%; border-radius: 3px; background: var(--serie-custo); }
+
+.grafico-topo { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.grafico-topo h2 { margin-right: auto; }
+.legenda-grafico { display: flex; gap: 14px; font-size: 0.82rem; color: var(--texto-suave); }
+.legenda-grafico span, .dica-grafico span { display: inline-flex; align-items: center; gap: 6px; }
+.amostra { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.amostra.serie-faturamento { background: var(--serie-faturamento); }
+.amostra.serie-custo { background: var(--serie-custo); }
+
+.grafico-area { position: relative; }
+.grafico-area svg { width: 100%; height: auto; display: block; overflow: visible; }
+.grafico-area path.serie-faturamento { fill: var(--serie-faturamento); }
+.grafico-area path.serie-custo { fill: var(--serie-custo); }
+.grafico-area .grade { stroke: var(--borda); stroke-width: 1; }
+.grafico-area .eixo { stroke: var(--borda-forte); stroke-width: 1; }
+.rotulo-eixo { fill: var(--texto-suave); font-size: 11px; font-family: inherit; text-transform: capitalize; }
+.rotulo-eixo.atual { fill: var(--texto); font-weight: 700; }
+.faixa-foco { fill: transparent; }
+.faixa-foco.ativa { fill: var(--realce); }
+.dica-grafico {
+  position: absolute; top: 0; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 12px; border-radius: 10px; pointer-events: none;
+  background: var(--superficie); border: 1px solid var(--borda-forte); box-shadow: var(--sombra);
+  font-size: 0.82rem; white-space: nowrap; text-transform: none;
+}
+.dica-grafico strong { text-transform: capitalize; }
+.dica-grafico b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+
+/* Calculadora */
+.calculadora { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 24px 32px 0; align-items: start; }
+.campo small { font-size: 0.8rem; }
+.campo-porcento { padding-left: 0; padding-right: 14px; }
+.campo-porcento input { padding-left: 14px !important; }
+
+.passos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.passos li {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 12px;
+  padding: 10px 0; border-bottom: 1px dashed var(--borda);
+}
+.passos li small { grid-column: 1 / -1; font-size: 0.8rem; }
+.passos li.subtotal { font-weight: 700; }
+.passos li.total { border-bottom: 0; border-top: 2px solid var(--texto); margin-top: 4px; font-size: 1.1rem; font-weight: 800; }
+
+.resultado-calculo { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.resultado-calculo > div {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px; border-radius: 12px; background: var(--superficie-2); border: 1px solid var(--borda);
+}
+.resultado-calculo .margem { font-size: 1.3rem; }
+.resultado-calculo small { font-size: 0.8rem; }
+.preco-sugerido { font-size: 1.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1000px) {
+  .colunas-visao, .calculadora { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .visao-geral, .calculadora { padding: 20px 16px 0; }
+}
+@media (max-width: 760px) {
+  .tabela-rolagem:has(.tabela-lancamentos) { background: none; border: 0; box-shadow: none; }
+  .tabela-lancamentos { min-width: 0; }
+  .tabela-lancamentos thead { display: none; }
+  .tabela-lancamentos, .tabela-lancamentos tbody, .tabela-lancamentos tr, .tabela-lancamentos td { display: block; width: 100%; }
+  .tabela-lancamentos tr { background: var(--superficie); border: 1px solid var(--borda); border-radius: 14px; padding: 12px 16px; margin-bottom: 10px; }
+  .tabela-lancamentos td { border: 0; padding: 4px 0; display: flex; justify-content: space-between; gap: 12px; text-align: right; }
+  .tabela-lancamentos td::before { content: attr(data-rotulo); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--texto-suave); text-align: left; }
+  .tabela-lancamentos td:first-child { text-align: left; }
+  .tabela-lancamentos td:first-child::before { display: none; }
+  .tabela-lancamentos .acoes-linha { width: 100%; justify-content: flex-end; }
+  .tabela-lancamentos .acoes-linha::before { display: none; }
+  .tabela-lancamentos td.direita { justify-content: space-between; }
+}
