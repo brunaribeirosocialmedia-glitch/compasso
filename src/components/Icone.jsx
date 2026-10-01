@@ -11,6 +11,8 @@ const caminhos = {
   lua: 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z',
   sair: 'M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3',
   menu: 'M3 6h18M3 12h18M3 18h18',
+  esconderMenu: 'M4 4h16v16H4zM9 4v16M16 9l-3 3 3 3',
+  mostrarMenu: 'M4 4h16v16H4zM9 4v16M13 9l3 3-3 3',
   fechar: 'M6 6l12 12M18 6 6 18',
   mais: 'M12 5v14M5 12h14',
   tarefas: 'M4 4h5v16H4zM10.5 4h5v10h-5zM17 4h3v7h-3z',

@@ -9,6 +9,14 @@ export default function Layout() {
   const { perfil, permissoes, sair } = useAuth()
   const { tema, alternarTema } = useTheme()
   const [menuAberto, setMenuAberto] = useState(false)
+  // no computador o menu lateral pode ficar escondido; a escolha fica salva neste navegador
+  const [escondido, setEscondido] = useState(() => {
+    try { return localStorage.getItem('compasso-menu-escondido') === '1' } catch { return false }
+  })
+  function alternarMenu() {
+    setEscondido(!escondido)
+    try { localStorage.setItem('compasso-menu-escondido', escondido ? '0' : '1') } catch { /* sem armazenamento */ }
+  }
 
   const itens = [
     { para: '/', nome: 'Início', icone: 'inicio', fim: true },
@@ -23,7 +31,13 @@ export default function Layout() {
   ].filter(Boolean)
 
   return (
-    <div className="app">
+    <div className={`app ${escondido ? 'menu-escondido' : ''}`}>
+      <div className="trilho-lateral">
+        <button className="botao-icone" onClick={alternarMenu} title="Mostrar menu" aria-label="Mostrar menu">
+          <Icone nome="mostrarMenu" />
+        </button>
+      </div>
+
       <header className="topo-mobile">
         <Logo tamanho={26} />
         <button className="botao-icone" onClick={() => setMenuAberto(!menuAberto)} aria-label="Abrir menu">
@@ -32,7 +46,12 @@ export default function Layout() {
       </header>
 
       <aside className={`lateral ${menuAberto ? 'aberta' : ''}`}>
-        <div className="lateral-logo"><Logo /></div>
+        <div className="lateral-logo">
+          <Logo />
+          <button className="botao-icone esconder-menu" onClick={alternarMenu} title="Esconder menu" aria-label="Esconder menu">
+            <Icone nome="esconderMenu" />
+          </button>
+        </div>
 
         <nav className="navegacao">
           {itens.map((item) => (

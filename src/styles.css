@@ -178,7 +178,16 @@ select { width: auto; padding: 7px 10px; cursor: pointer; }
   border-right: 1px solid var(--borda);
   padding: 20px 14px;
 }
-.lateral-logo { padding: 4px 8px 24px; }
+.lateral-logo { padding: 4px 0 24px 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* Menu escondido (só no computador): fica uma faixa com o botão de mostrar */
+.trilho-lateral { display: none; }
+.app.menu-escondido .lateral { display: none; }
+.app.menu-escondido .trilho-lateral {
+  display: flex; justify-content: center; position: sticky; top: 0;
+  width: 56px; height: 100vh; flex-shrink: 0; padding-top: 20px;
+  background: var(--superficie); border-right: 1px solid var(--borda);
+}
 
 .navegacao { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .nav-item {
@@ -283,6 +292,8 @@ a.atalho:hover { border-color: var(--borda-forte); transform: translateY(-2px); 
     padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
   .lateral.aberta { transform: none; box-shadow: var(--sombra); }
+  .app.menu-escondido .lateral { display: flex; }
+  .app.menu-escondido .trilho-lateral, .esconder-menu { display: none; }
   .veu { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(4, 0, 34, 0.5); }
   .pagina { padding: 28px 16px 48px; }
   .faixa-protegida { padding: 10px 16px; }
