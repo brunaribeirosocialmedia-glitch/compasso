@@ -5,6 +5,8 @@ import { formatarData, hojeISO } from '../../lib/datas'
 import { formatarMoeda } from '../../lib/moeda'
 import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
+import CartaoMeta from '../../components/CartaoMeta'
+import { competenciaDe, proximoMes } from '../../lib/metas'
 import { EscolhaStatus, STATUS } from './comum'
 
 const ORDENACOES = {
@@ -93,17 +95,21 @@ export default function ListaProspects() {
     })
   }, [])
 
+  const mes = competenciaDe()
   const resumo = useMemo(() => {
     const lista = prospects || []
     const abertos = lista.filter((p) => p.valor_fechado == null)
     return {
+      fechadoNoMes: lista
+        .filter((p) => p.fechado_em >= mes && p.fechado_em < proximoMes(mes))
+        .reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
       total: lista.length,
       porStatus: Object.fromEntries(Object.keys(STATUS).map((s) => [s, abertos.filter((p) => p.status === s).length])),
       emNegociacao: abertos.reduce((soma, p) => soma + Number(p.valor_estimado || 0), 0),
       fechados: lista.length - abertos.length,
       valorFechado: lista.reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
     }
-  }, [prospects])
+  }, [prospects, mes])
 
   const visiveis = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -164,6 +170,8 @@ export default function ListaProspects() {
           <strong>{formatarMoeda(resumo.valorFechado)}</strong>
         </div>
       </div>
+
+      {prospects && <CartaoMeta area="prospeccao" competencia={mes} atual={resumo.fechadoNoMes} titulo="Meta de fechamentos do mês" />}
 
       <div className="barra-lista">
         <div className="filtros-status">

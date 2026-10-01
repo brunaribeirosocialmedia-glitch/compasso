@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { formatarMoeda } from '../../lib/moeda'
 import { nomeMes, somarMeses, useFinanceiro } from './Financeiro'
+import CartaoMeta from '../../components/CartaoMeta'
 
 const n = (v) => Number(v || 0)
 
@@ -156,6 +157,8 @@ export default function VisaoGeral() {
           </small>
         </div>
       </div>
+
+      <CartaoMeta area="financeiro" competencia={competencia} atual={n(r.faturamento)} titulo="Meta de faturamento do mês" />
 
       <div className="colunas-visao">
         <section className="cartao secao">

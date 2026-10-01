@@ -1,0 +1,50 @@
+/* Tela inicial (resumão) e metas */
+
+.painel { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start; }
+.painel .linha-topo, .cartao-meta .linha-topo { display: flex; align-items: center; }
+.subtitulo-painel { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texto-suave); margin: 6px 0 0; }
+
+/* Contagens de tarefas */
+.contagens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.contagem { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 10px; background: var(--realce); }
+.contagem strong { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.contagem span { font-size: 0.8rem; color: var(--texto-suave); }
+.contagem.alerta-contagem { background: var(--erro-fundo); }
+.contagem.alerta-contagem strong { color: var(--erro); }
+
+.lista-pendencias { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.lista-pendencias a { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.lista-pendencias a:hover .pendencia-nome { text-decoration: underline; text-underline-offset: 3px; }
+.pendencia-nome { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0; }
+.pendencia-qtd { font-size: 0.82rem; white-space: nowrap; }
+.pendencia-qtd .atrasado { color: var(--erro); font-weight: 600; }
+
+/* Agenda */
+.agenda-dias { display: flex; flex-direction: column; gap: 8px; }
+.agenda-hora { font-size: 0.8rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Barra de meta: leitura sem números */
+.barra-meta { --cor-meta: var(--texto-suave); display: flex; flex-direction: column; gap: 10px; }
+.meta-longe { --cor-meta: var(--serie-custo); }
+.meta-ritmo { --cor-meta: var(--serie-faturamento); }
+.meta-perto, .meta-batida { --cor-meta: var(--ok); }
+.barra-meta-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.85rem; }
+.selo-meta { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--cor-meta); }
+.selo-meta::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--cor-meta); }
+.barra-meta-trilho { position: relative; height: 12px; border-radius: 6px; background: var(--realce); }
+.barra-meta-preenchida { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: var(--cor-meta); transition: width 0.4s ease; }
+.barra-meta-ritmo { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--texto); opacity: 0.55; }
+
+.form-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.form-meta .campo-moeda { width: 200px; }
+.form-meta small, .form-meta .alerta { flex-basis: 100%; margin: 0; }
+
+/* Funil (proporção, sem contagem) */
+.funil-barra { display: flex; gap: 3px; height: 12px; }
+.funil-barra span { border-radius: 4px; background: var(--cor-status); min-width: 6px; }
+.amostra[class*='status-'] { background: var(--cor-status); }
+
+@media (max-width: 560px) {
+  .contagem { padding: 10px; }
+  .contagem strong { font-size: 1.3rem; }
+}
