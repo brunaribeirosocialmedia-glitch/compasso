@@ -192,9 +192,23 @@ textarea:focus, .entrada-simples:focus { border-color: var(--texto); box-shadow:
 }
 .item-agenda b { font-weight: 800; margin-right: 4px; }
 .item-evento { background: var(--destaque); color: var(--destaque-texto); border: 1px solid var(--destaque); }
-.item-tarefa { background: transparent; color: var(--texto); border: 1px solid var(--borda-forte); }
-.item-tarefa.concluido { text-decoration: line-through; color: var(--texto-suave); }
-.item-tarefa.atrasado { border-color: var(--erro); color: var(--erro); }
+.item-tarefa {
+  background: color-mix(in srgb, var(--cor-tarefa) 14%, transparent); color: var(--texto);
+  border: 1px solid color-mix(in srgb, var(--cor-tarefa) 45%, transparent); border-left: 3px solid var(--cor-tarefa);
+}
+.item-tarefa.tarefa-concluida { text-decoration: line-through; text-decoration-color: var(--cor-tarefa); }
+
+/* Situação da tarefa nos calendários */
+.tarefa-concluida { --cor-tarefa: #1f9d61; }
+.tarefa-atrasada  { --cor-tarefa: #e5484d; }
+.tarefa-hoje      { --cor-tarefa: #d69100; }
+.tarefa-no-prazo  { --cor-tarefa: #3b78e7; }
+[data-theme='escuro'] .tarefa-concluida { --cor-tarefa: #6fd6a2; }
+[data-theme='escuro'] .tarefa-atrasada  { --cor-tarefa: #ff7b7f; }
+[data-theme='escuro'] .tarefa-hoje      { --cor-tarefa: #f2b84b; }
+[data-theme='escuro'] .tarefa-no-prazo  { --cor-tarefa: #7aa7ff; }
+.ponto[class*='tarefa-'] { background: var(--cor-tarefa); }
+.legenda-tarefas { display: flex; flex-wrap: wrap; gap: 6px 14px; }
 
 /* Bloco de Notas */
 .grade-notas {

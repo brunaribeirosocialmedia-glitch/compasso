@@ -32,6 +32,22 @@ export function situacaoPrazo(prazo, concluida) {
   return ''
 }
 
+// Cor da tarefa nos calendários
+export const SITUACOES_TAREFA = {
+  concluida: 'Concluída',
+  atrasada: 'Atrasada',
+  hoje: 'Deveria estar pronta hoje',
+  'no-prazo': 'No prazo',
+}
+
+export function situacaoTarefa(prazo, concluida) {
+  if (concluida) return 'concluida'
+  const hoje = hojeISO()
+  if (prazo < hoje) return 'atrasada'
+  if (prazo === hoje) return 'hoje'
+  return 'no-prazo'
+}
+
 // Valor para <input type="datetime-local"> a partir de um timestamptz
 export function paraCampoDataHora(dataHora) {
   if (!dataHora) return ''

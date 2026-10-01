@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { supabase, traduzirErro } from '../../lib/supabase'
 import { useTempoReal } from '../../lib/useTempoReal'
 import { useCliente } from '../../pages/AreaCliente'
-import { formatarHora, hojeISO, paraCampoDataHora, paraISO, semanasDoMes } from '../../lib/datas'
+import { formatarHora, hojeISO, paraCampoDataHora, paraISO, semanasDoMes, situacaoTarefa } from '../../lib/datas'
+import LegendaTarefas from '../LegendaTarefas'
 import { TIPOS_EVENTO } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
 import Icone from '../Icone'
@@ -178,8 +179,7 @@ export default function Calendario() {
           </button>
         </div>
         <span className="espaco" />
-        <span className="legenda"><i className="ponto ponto-evento" /> Evento</span>
-        <span className="legenda"><i className="ponto ponto-tarefa" /> Prazo de tarefa</span>
+        <LegendaTarefas />
         <button className="botao botao-principal botao-pequeno" onClick={() => setModal({ evento: {}, dia: hojeTexto })}>
           <Icone nome="mais" tamanho={16} /> Evento
         </button>
@@ -204,7 +204,7 @@ export default function Calendario() {
                 {itens.map((item) => (
                   <button
                     key={item.origem + item.id}
-                    className={`item-agenda item-${item.origem} ${item.concluida_em ? 'concluido' : ''} ${item.origem === 'tarefa' && !item.concluida_em && iso < hojeTexto ? 'atrasado' : ''}`}
+                    className={`item-agenda item-${item.origem} ${item.origem === 'tarefa' ? `tarefa-${situacaoTarefa(iso, item.concluida_em)}` : ''}`}
                     onClick={() => abrirItem(item)}
                     title={item.titulo}
                   >

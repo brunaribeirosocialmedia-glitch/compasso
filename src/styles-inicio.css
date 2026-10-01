@@ -19,9 +19,25 @@
 .pendencia-qtd { font-size: 0.82rem; white-space: nowrap; }
 .pendencia-qtd .atrasado { color: var(--erro); font-weight: 600; }
 
-/* Agenda */
-.agenda-dias { display: flex; flex-direction: column; gap: 8px; }
-.agenda-hora { font-size: 0.8rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Agenda da semana (calendário) */
+.agenda-topo { display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap; }
+.agenda-topo .legenda-tarefas { margin-left: auto; }
+.agenda-periodo { font-weight: 700; min-width: 190px; text-align: center; }
+.grade-semana-rolagem { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+.grade-semana {
+  display: grid; grid-template-columns: repeat(7, minmax(130px, 1fr)); min-width: 910px;
+  border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; background: var(--borda); gap: 1px;
+}
+.semana-dia { background: var(--superficie); min-height: 260px; padding: 8px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.semana-dia-topo { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 6px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-suave); }
+.dia-numero-semana { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; letter-spacing: 0; color: var(--texto); }
+.semana-dia.hoje { background: var(--superficie-2); }
+.semana-dia.hoje .dia-numero-semana { background: var(--destaque); color: var(--destaque-texto); }
+.item-semana { display: flex; flex-direction: column; gap: 2px; white-space: normal; padding: 5px 8px; }
+.item-semana-titulo { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
+.item-semana-cliente { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; font-weight: 600; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+.item-semana-cliente .ponto { width: 7px; height: 7px; }
+.item-semana:hover { filter: brightness(1.08); }
 
 /* Barra de meta: leitura sem números */
 .barra-meta { --cor-meta: var(--texto-suave); display: flex; flex-direction: column; gap: 10px; }

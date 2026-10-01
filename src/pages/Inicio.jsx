@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { formatarData, formatarHora, hojeISO, paraISO, situacaoPrazo } from '../lib/datas'
+import { formatarData, formatarHora, hojeISO, paraISO, situacaoPrazo, situacaoTarefa } from '../lib/datas'
 import { buscarMeta, competenciaDe, fechadoNoMes, ritmoEsperado } from '../lib/metas'
 import BarraMeta from '../components/BarraMeta'
+import Icone from '../components/Icone'
+import LegendaTarefas from '../components/LegendaTarefas'
 import { STATUS } from './prospeccao/comum'
 
 const emDias = (dias) => {
@@ -78,63 +80,93 @@ function TarefasAgencia({ clientes }) {
   )
 }
 
-function nomeDia(dia) {
-  if (dia === hojeISO()) return 'Hoje'
-  if (dia === emDias(1)) return 'Amanhã'
-  return formatarData(dia, { weekday: 'long', day: 'numeric', month: 'short' })
+const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+// Domingo a sábado da semana de hoje, deslocada em "semanas"
+function diasDaSemana(semanas) {
+  const inicio = new Date()
+  inicio.setDate(inicio.getDate() - inicio.getDay() + semanas * 7)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(inicio)
+    d.setDate(d.getDate() + i)
+    return paraISO(d)
+  })
 }
 
+// Calendário da semana com todos os clientes: eventos e prazos de tarefas
+// (inclusive as concluídas), coloridos pela situação de cada tarefa
 function AgendaSemana({ clientes }) {
+  const [semana, setSemana] = useState(0)
   const [itens, setItens] = useState(null)
+  const dias = diasDaSemana(semana)
+  const hoje = hojeISO()
 
   useEffect(() => {
+    const [primeiro, , , , , , ultimo] = diasDaSemana(semana)
+    setItens(null)
     supabase.from('calendario_itens').select('*')
-      .gte('dia', hojeISO()).lte('dia', emDias(6)).eq('concluida', false)
-      .order('dia').order('inicio', { nullsFirst: true })
+      .gte('dia', primeiro).lte('dia', ultimo)
+      .order('dia').order('dia_inteiro', { ascending: false }).order('inicio')
       .then(({ data }) => setItens(data || []))
-  }, [])
+  }, [semana])
 
-  const dias = Object.entries((itens || []).reduce((acc, i) => {
+  const porDia = (itens || []).reduce((acc, i) => {
     (acc[i.dia] ||= []).push(i)
     return acc
-  }, {}))
+  }, {})
+
+  const titulo = `${formatarData(dias[0], { day: 'numeric', month: 'short' })} a ${formatarData(dias[6], { day: 'numeric', month: 'short', year: 'numeric' })}`
 
   return (
-    <section className="cartao secao">
-      <h2>Agenda da semana</h2>
-      {!itens ? (
-        <p className="texto-suave">Carregando…</p>
-      ) : dias.length === 0 ? (
-        <p className="texto-suave">Nada marcado para os próximos 7 dias.</p>
-      ) : (
-        <div className="agenda-dias">
-          {dias.map(([dia, lista]) => (
-            <div key={dia} className="agenda-dia">
-              <h3 className="subtitulo-painel">{nomeDia(dia)}</h3>
-              <ul className="lista-minhas">
-                {lista.map((i) => {
-                  const cliente = clientes[i.cliente_id]
-                  const para = i.origem === 'tarefa'
-                    ? `/clientes/${i.cliente_id}/tarefas?tarefa=${i.id}`
-                    : `/clientes/${i.cliente_id}/calendario`
-                  return (
-                    <li key={`${i.origem}-${i.id}`}>
-                      <Link to={para}>
-                        <span className="ponto" style={{ background: cliente?.cor || 'var(--texto-suave)' }} />
-                        <span className="minha-tarefa-titulo">{i.titulo}</span>
-                        <span className="texto-suave minha-tarefa-cliente">{cliente?.nome}</span>
-                        <span className="texto-suave agenda-hora">
-                          {i.origem === 'tarefa' ? 'Prazo' : i.dia_inteiro ? 'Dia todo' : formatarHora(i.inicio)}
-                        </span>
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
+    <section className="cartao secao agenda-semana">
+      <div className="agenda-topo">
+        <h2>Agenda da semana</h2>
+        <div className="navegacao-mes">
+          <button className="botao-icone" onClick={() => setSemana(semana - 1)} aria-label="Semana anterior"><Icone nome="voltar" /></button>
+          <span className="agenda-periodo">{titulo}</span>
+          <button className="botao-icone" onClick={() => setSemana(semana + 1)} aria-label="Próxima semana"><Icone nome="avancar" /></button>
+          {semana !== 0 && <button className="botao botao-secundario botao-pequeno" onClick={() => setSemana(0)}>Esta semana</button>}
+        </div>
+        <LegendaTarefas />
+      </div>
+
+      <div className="grade-semana-rolagem">
+        <div className="grade-semana">
+          {dias.map((dia, i) => (
+            <div key={dia} className={`semana-dia ${dia === hoje ? 'hoje' : ''}`}>
+              <div className="semana-dia-topo">
+                <span>{DIAS_SEMANA[i]}</span>
+                <strong className="dia-numero-semana">{Number(dia.slice(8))}</strong>
+              </div>
+              {(porDia[dia] || []).map((item) => {
+                const cliente = clientes[item.cliente_id]
+                const tarefa = item.origem === 'tarefa'
+                const para = tarefa
+                  ? `/clientes/${item.cliente_id}/tarefas?tarefa=${item.id}`
+                  : `/clientes/${item.cliente_id}/calendario`
+                return (
+                  <Link
+                    key={`${item.origem}-${item.id}`}
+                    to={para}
+                    className={`item-agenda item-semana item-${item.origem} ${tarefa ? `tarefa-${situacaoTarefa(item.dia, item.concluida)}` : ''}`}
+                    title={`${item.titulo} · ${cliente?.nome || ''}`}
+                  >
+                    <span className="item-semana-titulo">
+                      {!tarefa && !item.dia_inteiro && <b>{formatarHora(item.inicio)}</b>}
+                      {item.titulo}
+                    </span>
+                    <span className="item-semana-cliente">
+                      <i className="ponto" style={{ background: cliente?.cor || 'var(--texto-suave)' }} />
+                      {cliente?.nome}
+                    </span>
+                  </Link>
+                )
+              })}
             </div>
           ))}
         </div>
-      )}
+      </div>
+      {itens?.length === 0 && <p className="texto-suave">Nada marcado nesta semana.</p>}
     </section>
   )
 }
@@ -279,9 +311,11 @@ export default function Inicio() {
         <h1>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ''}.</h1>
       </header>
 
+      <AgendaSemana clientes={clientes} />
+
       <div className="painel">
         <TarefasAgencia clientes={clientes} />
-        <AgendaSemana clientes={clientes} />
+        <MinhasTarefas usuarioId={session.user.id} />
       </div>
 
       {metas && (
@@ -290,8 +324,6 @@ export default function Inicio() {
           {permissoes.financeiro_liberado && <ResumoFinanceiro />}
         </div>
       )}
-
-      <MinhasTarefas usuarioId={session.user.id} />
     </div>
   )
 }
