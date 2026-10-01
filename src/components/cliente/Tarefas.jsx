@@ -9,6 +9,7 @@ import { PRIORIDADES } from '../../lib/cores'
 import Icone from '../Icone'
 import TarefaModal from './TarefaModal'
 import EditarColunas from './EditarColunas'
+import { Etiqueta, indexarEtiquetas } from './Etiquetas'
 
 const ESPACO = 1024
 
@@ -29,7 +30,7 @@ function Avatar({ pessoa }) {
   )
 }
 
-function CartaoTarefa({ tarefa, pessoa, aoAbrir, aoArrastar, fantasma }) {
+function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, fantasma }) {
   const situacao = situacaoPrazo(tarefa.prazo, tarefa.concluida_em)
   return (
     <article
@@ -47,7 +48,7 @@ function CartaoTarefa({ tarefa, pessoa, aoAbrir, aoArrastar, fantasma }) {
       <p className="cartao-tarefa-titulo">{tarefa.titulo}</p>
       {tarefa.etiquetas?.length > 0 && (
         <div className="etiquetas">
-          {tarefa.etiquetas.map((e) => <span key={e} className="etiqueta-mini">{e}</span>)}
+          {tarefa.etiquetas.map((e) => <Etiqueta key={e} nome={e} cor={cores[e.trim().toLowerCase()]?.cor} />)}
         </div>
       )}
       {(tarefa.prazo || pessoa) && (
@@ -117,6 +118,8 @@ export default function Tarefas() {
   const [filtroPessoa, setFiltroPessoa] = useState('')
   const [erro, setErro] = useState('')
 
+  const [etiquetas, setEtiquetas] = useState([])
+
   const carregar = useCallback(async () => {
     const [{ data: c }, { data: t }] = await Promise.all([
       supabase.from('tarefa_colunas').select('*').eq('cliente_id', cliente.id).order('ordem'),
@@ -126,7 +129,15 @@ export default function Tarefas() {
     setTarefas(t || [])
   }, [cliente.id])
 
+  // etiquetas salvas da agência; ao renomear/excluir, as tarefas também mudam
+  const carregarEtiquetas = useCallback(async () => {
+    const { data } = await supabase.from('etiquetas').select('*').order('nome')
+    setEtiquetas(data || [])
+  }, [])
+  const coresEtiquetas = useMemo(() => indexarEtiquetas(etiquetas), [etiquetas])
+
   useEffect(() => { carregar() }, [carregar])
+  useEffect(() => { carregarEtiquetas() }, [carregarEtiquetas])
   useTempoReal(['tarefas', 'tarefa_colunas'], cliente.id, carregar)
 
   const pessoaPorId = useMemo(() => Object.fromEntries(pessoas.map((p) => [p.id, p])), [pessoas])
@@ -245,6 +256,7 @@ export default function Tarefas() {
                           tarefa={t}
                           fantasma={fantasma}
                           pessoa={pessoaPorId[t.responsavel_id]}
+                          cores={coresEtiquetas}
                           aoAbrir={abrir}
                           aoArrastar={setArrastando}
                         />
@@ -270,6 +282,8 @@ export default function Tarefas() {
           tarefa={tarefaAberta}
           colunas={colunas}
           pessoas={pessoas}
+          etiquetas={etiquetas}
+          aoMudarEtiquetas={async () => { await carregarEtiquetas(); await carregar() }}
           aoFechar={fechar}
           aoSalvar={(nova) => setTarefas((atual) => atual.map((t) => (t.id === nova.id ? nova : t)))}
           aoExcluir={(id) => { setTarefas((atual) => atual.filter((t) => t.id !== id)); fechar() }}

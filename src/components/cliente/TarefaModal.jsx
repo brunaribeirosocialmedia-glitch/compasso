@@ -4,8 +4,9 @@ import { PRIORIDADES } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
 import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
 import Icone from '../Icone'
+import { SeletorEtiquetas } from './Etiquetas'
 
-export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalvar, aoExcluir }) {
+export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMudarEtiquetas, aoFechar, aoSalvar, aoExcluir }) {
   const [form, setForm] = useState({
     titulo: tarefa.titulo,
     descricao: tarefa.descricao || '',
@@ -14,7 +15,7 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
     prioridade: tarefa.prioridade || '',
     data_inicio: tarefa.data_inicio || '',
     prazo: tarefa.prazo || '',
-    etiquetas: (tarefa.etiquetas || []).join(', '),
+    etiquetas: tarefa.etiquetas || [],
   })
   const [erro, setErro] = useState('')
   const { estado: estadoSalvar, rodar } = useSalvar()
@@ -41,7 +42,7 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
       prioridade: form.prioridade || null,
       data_inicio: form.data_inicio || null,
       prazo: form.prazo || null,
-      etiquetas: [...new Set(form.etiquetas.split(',').map((x) => x.trim()).filter(Boolean))],
+      etiquetas: form.etiquetas,
     }
     const { data, error } = await supabase.from('tarefas').update(campos).eq('id', tarefa.id).select().single()
     if (error) return setErro(traduzirErro(error))
@@ -144,10 +145,16 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
             <span>Prazo</span>
             <input type="date" {...campo('prazo')} />
           </label>
-          <label className="campo">
-            <span>Etiquetas</span>
-            <input {...campo('etiquetas')} placeholder="reels, carrossel" />
-          </label>
+        </div>
+
+        <div className="campo">
+          <span>Etiquetas</span>
+          <SeletorEtiquetas
+            valor={form.etiquetas}
+            onChange={(lista) => setForm((f) => ({ ...f, etiquetas: lista }))}
+            etiquetas={etiquetas}
+            aoMudarLista={aoMudarEtiquetas}
+          />
         </div>
 
         {concluidaEm && (
