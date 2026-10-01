@@ -3,6 +3,7 @@ import { supabase, traduzirErro } from '../../lib/supabase'
 import { PRIORIDADES } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
 import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
+import Icone from '../Icone'
 
 export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalvar, aoExcluir }) {
   const [form, setForm] = useState({
@@ -48,6 +49,27 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
     return true
   }
 
+  // Muda o status na hora, sem precisar clicar em Salvar
+  const [statusAtual, setStatusAtual] = useState(tarefa.coluna_id)
+  const [movida, setMovida] = useState('')
+  const [concluidaEm, setConcluidaEm] = useState(tarefa.concluida_em)
+  async function mudarStatus(coluna) {
+    if (coluna.id === statusAtual) return
+    const anterior = statusAtual
+    setStatusAtual(coluna.id)
+    setForm((f) => ({ ...f, coluna_id: coluna.id }))
+    setErro('')
+    const { data, error } = await supabase.from('tarefas').update({ coluna_id: coluna.id }).eq('id', tarefa.id).select().single()
+    if (error) {
+      setStatusAtual(anterior)
+      setForm((f) => ({ ...f, coluna_id: anterior }))
+      return setErro(traduzirErro(error))
+    }
+    setConcluidaEm(data.concluida_em)
+    aoSalvar(data)
+    setMovida(coluna.nome)
+  }
+
   async function excluir() {
     const { error } = await supabase.from('tarefas').delete().eq('id', tarefa.id)
     if (error) return setErro(traduzirErro(error))
@@ -69,6 +91,27 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
       }
     >
       <form id="form-tarefa" className="formulario" onSubmit={salvar}>
+        <div className="campo">
+          <span>Status</span>
+          <div className="status-tarefa" role="radiogroup" aria-label="Status da tarefa">
+            {colunas.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                role="radio"
+                aria-checked={statusAtual === c.id}
+                className={`status-opcao ${statusAtual === c.id ? 'marcado' : ''}`}
+                style={c.cor ? { '--cor-coluna': c.cor } : undefined}
+                onClick={() => mudarStatus(c)}
+              >
+                {statusAtual === c.id && <Icone nome="confirmar" tamanho={15} />}
+                {c.nome}
+              </button>
+            ))}
+          </div>
+          {movida && <small className="status-movida" key={movida}>✓ Movida para “{movida}”</small>}
+        </div>
+
         <label className="campo">
           <span>Título</span>
           <input {...campo('titulo')} required />
@@ -79,12 +122,6 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
         </label>
 
         <div className="grade-campos">
-          <label className="campo">
-            <span>Status</span>
-            <select {...campo('coluna_id')}>
-              {colunas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-            </select>
-          </label>
           <label className="campo">
             <span>Responsável</span>
             <select {...campo('responsavel_id')}>
@@ -113,8 +150,8 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
           </label>
         </div>
 
-        {tarefa.concluida_em && (
-          <p className="texto-suave">Concluída em {new Date(tarefa.concluida_em).toLocaleDateString('pt-BR')}.</p>
+        {concluidaEm && (
+          <p className="texto-suave">Concluída em {new Date(concluidaEm).toLocaleDateString('pt-BR')}.</p>
         )}
         {erro && <p className="alerta alerta-erro">{erro}</p>}
       </form>
