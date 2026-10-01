@@ -26,6 +26,7 @@ const caminhos = {
   lixeira: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
   seta: 'M5 12h14M13 6l6 6-6 6',
   busca: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4',
+  confirmar: 'M5 12.5l4.5 4.5L19 7',
 }
 
 export default function Icone({ nome, tamanho = 20 }) {

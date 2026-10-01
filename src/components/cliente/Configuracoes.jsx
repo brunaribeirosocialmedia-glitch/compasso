@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useCliente } from '../../pages/AreaCliente'
 import { CORES_CLIENTE } from '../../lib/cores'
 import { SeletorCor } from '../../pages/Clientes'
+import BotaoSalvar, { useSalvar } from '../BotaoSalvar'
 
 export default function Configuracoes() {
   const { permissoes } = useAuth()
@@ -14,6 +15,7 @@ export default function Configuracoes() {
   const [descricao, setDescricao] = useState(cliente.descricao || '')
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
+  const { estado: estadoSalvar, rodar } = useSalvar()
 
   useEffect(() => {
     supabase.from('perfis').select('id, nome, email, papel, ativo').order('nome').then(({ data }) => setEquipe(data || []))
@@ -32,10 +34,14 @@ export default function Configuracoes() {
 
   const salvarDados = (e) => {
     e.preventDefault()
-    executar(
-      supabase.from('clientes').update({ nome: nome.trim(), descricao: descricao.trim() || null }).eq('id', cliente.id),
-      'Dados salvos.'
-    )
+    setErro('')
+    setAviso('')
+    rodar(async () => {
+      const { error } = await supabase.from('clientes').update({ nome: nome.trim(), descricao: descricao.trim() || null }).eq('id', cliente.id)
+      if (error) return setErro(traduzirErro(error))
+      recarregarCliente()
+      return true
+    })
   }
 
   const alternarMembro = (pessoa) => membros.includes(pessoa.id)
@@ -89,7 +95,7 @@ export default function Configuracoes() {
               onChange={(cor) => executar(supabase.from('clientes').update({ cor }).eq('id', cliente.id))}
             />
           </div>
-          <button className="botao botao-principal alinhar-inicio" disabled={!nome.trim()}>Salvar dados</button>
+          <BotaoSalvar estado={estadoSalvar} texto="Salvar dados" textoSalvo="Dados salvos" className="alinhar-inicio" disabled={!nome.trim()} />
         </form>
       </section>
 

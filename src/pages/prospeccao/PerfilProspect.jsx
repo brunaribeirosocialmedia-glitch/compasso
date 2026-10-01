@@ -6,6 +6,7 @@ import { FORMAS_PAGAMENTO, formatarMoeda, lerMoeda, paraCampoMoeda } from '../..
 import { CORES_CLIENTE } from '../../lib/cores'
 import { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
+import BotaoSalvar, { useSalvar } from '../../components/BotaoSalvar'
 import { EscolhaStatus } from './comum'
 
 const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento']
@@ -104,7 +105,7 @@ export default function PerfilProspect() {
   const [form, setForm] = useState(null)
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
-  const [salvando, setSalvando] = useState(false)
+  const { estado: estadoSalvar, rodar } = useSalvar()
 
   useEffect(() => {
     supabase.from('prospects').select('*, clientes(id, nome)').eq('id', prospectId).maybeSingle().then(({ data }) => {
@@ -128,8 +129,12 @@ export default function PerfilProspect() {
   const campo = (nome) => ({ value: form[nome], onChange: (e) => { setForm({ ...form, [nome]: e.target.value }); setAviso('') } })
   const alterado = JSON.stringify(form) !== JSON.stringify(paraFormulario(prospect))
 
-  async function salvar(e) {
+  function salvar(e) {
     e.preventDefault()
+    rodar(gravar)
+  }
+
+  async function gravar() {
     setErro('')
     const valorEstimado = lerMoeda(form.valor_estimado)
     const valorFechado = lerMoeda(form.valor_fechado)
@@ -143,13 +148,12 @@ export default function PerfilProspect() {
       valor_fechado: valorFechado,
       ...Object.fromEntries(CAMPOS_TEXTO.map((k) => [k, form[k].trim() || null])),
     }
-    setSalvando(true)
     const { data, error } = await supabase.from('prospects').update(dados).eq('id', prospect.id).select('*, clientes(id, nome)').single()
-    setSalvando(false)
     if (error) return setErro(traduzirErro(error))
     setProspect(data)
     setForm(paraFormulario(data))
     setAviso('Alterações salvas.')
+    return true
   }
 
   async function virarCliente() {
@@ -228,7 +232,7 @@ export default function PerfilProspect() {
           {aviso && <p className="alerta alerta-ok">{aviso}</p>}
           <span className="espaco" />
           {alterado && <span className="texto-suave">Alterações não salvas</span>}
-          <button className="botao botao-principal" disabled={!alterado || salvando}>{salvando ? 'Salvando…' : 'Salvar'}</button>
+          <BotaoSalvar estado={estadoSalvar} disabled={!alterado} />
         </div>
       </form>
 

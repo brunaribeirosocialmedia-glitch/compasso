@@ -5,6 +5,7 @@ import { formatarData, hojeISO } from '../../lib/datas'
 import { formatarMoeda, lerMoeda, paraCampoMoeda } from '../../lib/moeda'
 import Modal, { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
+import BotaoSalvar, { pausaParaVer, useSalvar } from '../../components/BotaoSalvar'
 import { nomeMes, somarMeses, useFinanceiro } from './Financeiro'
 import { CATEGORIAS_VARIAVEIS, ROTULOS_COLUNA, SECOES, STATUS_LANCAMENTO } from './secoes'
 
@@ -34,7 +35,7 @@ export function FormularioLancamento({ config, item, apoio, competencia, aoFecha
     }))
   })
   const [erro, setErro] = useState('')
-  const [salvando, setSalvando] = useState(false)
+  const { estado: estadoSalvar, rodar } = useSalvar()
   const definir = (chave, valor) => setForm((f) => ({ ...f, [chave]: valor }))
 
   const visiveis = config.campos.filter((c) => !c.mostrarSe || c.mostrarSe(form))
@@ -56,14 +57,18 @@ export function FormularioLancamento({ config, item, apoio, competencia, aoFecha
     // ao marcar como pago sem data, usa hoje
     if (config.dataPago && dados.status === 'pago' && !dados[config.dataPago]) dados[config.dataPago] = hojeISO()
 
-    setSalvando(true)
-    const { error } = novo
-      ? await supabase.from(config.tabela).insert({ ...dados, competencia })
-      : await supabase.from(config.tabela).update(dados).eq('id', item.id)
-    setSalvando(false)
-    if (error) return setErro(traduzirErro(error))
-    aoSalvar()
-    aoFechar()
+    const ok = await rodar(async () => {
+      const { error } = novo
+        ? await supabase.from(config.tabela).insert({ ...dados, competencia })
+        : await supabase.from(config.tabela).update(dados).eq('id', item.id)
+      if (error) return setErro(traduzirErro(error))
+      aoSalvar()
+      return true
+    })
+    if (ok) {
+      await pausaParaVer()
+      aoFechar()
+    }
   }
 
   async function excluir() {
@@ -83,9 +88,7 @@ export function FormularioLancamento({ config, item, apoio, competencia, aoFecha
           {!novo && <BotaoExcluir aoConfirmar={excluir} />}
           <span className="espaco" />
           <button type="button" className="botao botao-secundario" onClick={aoFechar}>Cancelar</button>
-          <button type="submit" form="form-lancamento" className="botao botao-principal" disabled={salvando}>
-            {salvando ? 'Salvando…' : 'Salvar'}
-          </button>
+          <BotaoSalvar type="submit" form="form-lancamento" estado={estadoSalvar} />
         </>
       }
     >

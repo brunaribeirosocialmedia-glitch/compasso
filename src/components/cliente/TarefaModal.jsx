@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase, traduzirErro } from '../../lib/supabase'
 import { PRIORIDADES } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
+import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
 
 export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalvar, aoExcluir }) {
   const [form, setForm] = useState({
@@ -15,7 +16,7 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
     etiquetas: (tarefa.etiquetas || []).join(', '),
   })
   const [erro, setErro] = useState('')
-  const [salvando, setSalvando] = useState(false)
+  const { estado: estadoSalvar, rodar } = useSalvar()
   const campo = (nome) => ({ value: form[nome], onChange: (e) => setForm({ ...form, [nome]: e.target.value }) })
 
   async function salvar(e) {
@@ -23,7 +24,14 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
     if (form.data_inicio && form.prazo && form.data_inicio > form.prazo) {
       return setErro('A data de início não pode ser depois do prazo.')
     }
-    setSalvando(true)
+    setErro('')
+    if (await rodar(gravar)) {
+      await pausaParaVer()
+      aoFechar()
+    }
+  }
+
+  async function gravar() {
     const campos = {
       titulo: form.titulo.trim(),
       descricao: form.descricao.trim() || null,
@@ -35,10 +43,9 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
       etiquetas: [...new Set(form.etiquetas.split(',').map((x) => x.trim()).filter(Boolean))],
     }
     const { data, error } = await supabase.from('tarefas').update(campos).eq('id', tarefa.id).select().single()
-    setSalvando(false)
     if (error) return setErro(traduzirErro(error))
     aoSalvar(data)
-    aoFechar()
+    return true
   }
 
   async function excluir() {
@@ -57,9 +64,7 @@ export default function TarefaModal({ tarefa, colunas, pessoas, aoFechar, aoSalv
           <BotaoExcluir aoConfirmar={excluir} texto="Excluir tarefa" />
           <span className="espaco" />
           <button type="button" className="botao botao-secundario" onClick={aoFechar}>Cancelar</button>
-          <button type="submit" form="form-tarefa" className="botao botao-principal" disabled={salvando || !form.titulo.trim()}>
-            {salvando ? 'Salvando…' : 'Salvar'}
-          </button>
+          <BotaoSalvar type="submit" form="form-tarefa" estado={estadoSalvar} disabled={!form.titulo.trim()} />
         </>
       }
     >

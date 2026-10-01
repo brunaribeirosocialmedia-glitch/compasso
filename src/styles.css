@@ -111,6 +111,15 @@ select { width: auto; padding: 7px 10px; cursor: pointer; }
 .botao:disabled { opacity: 0.5; cursor: default; }
 .botao-principal { background: var(--destaque); color: var(--destaque-texto); }
 .botao-principal:not(:disabled):hover { background: var(--destaque-hover); }
+
+/* Botão de salvar: fica verde com ✓ quando os dados foram gravados */
+.botao-salvar { transition: background-color 0.25s, color 0.25s, border-color 0.25s; }
+.botao-salvar.salvo, .botao-salvar.salvo:disabled {
+  background: var(--ok); border-color: var(--ok); color: var(--destaque-texto);
+  opacity: 1; animation: salvou 0.35s ease;
+}
+@keyframes salvou { 40% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .botao-salvar.salvo { animation: none; } }
 .botao-secundario { background: transparent; border-color: var(--borda-forte); }
 .botao-secundario:hover { background: var(--realce); }
 

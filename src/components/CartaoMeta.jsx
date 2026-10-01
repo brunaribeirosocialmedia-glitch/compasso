@@ -3,6 +3,7 @@ import { traduzirErro } from '../lib/supabase'
 import { formatarMoeda, lerMoeda, paraCampoMoeda } from '../lib/moeda'
 import { buscarMeta, ritmoEsperado, salvarMeta } from '../lib/metas'
 import BarraMeta from './BarraMeta'
+import BotaoSalvar, { pausaParaVer, useSalvar } from './BotaoSalvar'
 
 // Meta do mês dentro da aba (com valores). A tela inicial mostra só a barra.
 export default function CartaoMeta({ area, competencia, atual, titulo }) {
@@ -10,6 +11,7 @@ export default function CartaoMeta({ area, competencia, atual, titulo }) {
   const [editando, setEditando] = useState(false)
   const [texto, setTexto] = useState('')
   const [erro, setErro] = useState('')
+  const { estado: estadoSalvar, rodar } = useSalvar()
 
   useEffect(() => {
     setMeta(undefined)
@@ -26,10 +28,17 @@ export default function CartaoMeta({ area, competencia, atual, titulo }) {
     e.preventDefault()
     const valor = lerMoeda(texto)
     if (!(valor > 0)) return setErro('Digite um valor maior que zero.')
-    const { error } = await salvarMeta(area, competencia, valor)
-    if (error) return setErro(traduzirErro(error))
-    setMeta({ competencia, valor })
-    setEditando(false)
+    setErro('')
+    const ok = await rodar(async () => {
+      const { error } = await salvarMeta(area, competencia, valor)
+      if (error) return setErro(traduzirErro(error))
+      return true
+    })
+    if (ok) {
+      await pausaParaVer()
+      setMeta({ competencia, valor })
+      setEditando(false)
+    }
   }
 
   if (meta === undefined) return null
@@ -50,7 +59,7 @@ export default function CartaoMeta({ area, competencia, atual, titulo }) {
             <span>R$</span>
             <input inputMode="decimal" placeholder="0,00" value={texto} onChange={(e) => setTexto(e.target.value)} autoFocus aria-label="Valor da meta" />
           </div>
-          <button className="botao botao-principal botao-pequeno">Salvar</button>
+          <BotaoSalvar estado={estadoSalvar} textoSalvo="Meta salva" className="botao-pequeno" />
           <button type="button" className="botao botao-secundario botao-pequeno" onClick={() => setEditando(false)}>Cancelar</button>
           <small className="texto-suave">Vale para este mês e os próximos, até você mudar de novo.</small>
           {erro && <p className="alerta alerta-erro">{erro}</p>}

@@ -5,6 +5,7 @@ import { useTempoReal } from '../../lib/useTempoReal'
 import { useCliente } from '../../pages/AreaCliente'
 import { formatarHora, hojeISO, paraCampoDataHora, paraISO, semanasDoMes, situacaoTarefa } from '../../lib/datas'
 import LegendaTarefas from '../LegendaTarefas'
+import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
 import { TIPOS_EVENTO } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
 import Icone from '../Icone'
@@ -23,6 +24,7 @@ function EventoModal({ evento, diaInicial, clienteId, aoFechar, aoMudar }) {
     descricao: evento.descricao || '',
   }))
   const [erro, setErro] = useState('')
+  const { estado: estadoSalvar, rodar } = useSalvar()
   const campo = (nome) => ({ value: form[nome], onChange: (e) => setForm({ ...form, [nome]: e.target.value }) })
 
   async function salvar(e) {
@@ -39,12 +41,19 @@ function EventoModal({ evento, diaInicial, clienteId, aoFechar, aoMudar }) {
       fim: fim?.toISOString() || null,
       descricao: form.descricao.trim() || null,
     }
-    const { error } = novo
-      ? await supabase.from('eventos').insert({ ...campos, cliente_id: clienteId })
-      : await supabase.from('eventos').update(campos).eq('id', evento.id)
-    if (error) return setErro(traduzirErro(error))
-    aoMudar()
-    aoFechar()
+    setErro('')
+    const ok = await rodar(async () => {
+      const { error } = novo
+        ? await supabase.from('eventos').insert({ ...campos, cliente_id: clienteId })
+        : await supabase.from('eventos').update(campos).eq('id', evento.id)
+      if (error) return setErro(traduzirErro(error))
+      aoMudar()
+      return true
+    })
+    if (ok) {
+      await pausaParaVer()
+      aoFechar()
+    }
   }
 
   async function excluir() {
@@ -64,7 +73,7 @@ function EventoModal({ evento, diaInicial, clienteId, aoFechar, aoMudar }) {
           {!novo && <BotaoExcluir aoConfirmar={excluir} texto="Excluir evento" />}
           <span className="espaco" />
           <button type="button" className="botao botao-secundario" onClick={aoFechar}>Cancelar</button>
-          <button type="submit" form="form-evento" className="botao botao-principal" disabled={!form.titulo.trim()}>Salvar</button>
+          <BotaoSalvar type="submit" form="form-evento" estado={estadoSalvar} disabled={!form.titulo.trim()} />
         </>
       }
     >
