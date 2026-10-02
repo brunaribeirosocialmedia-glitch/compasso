@@ -124,11 +124,26 @@ textarea:focus, .entrada-simples:focus { border-color: var(--texto); box-shadow:
   background: var(--superficie-2); border: 1px solid var(--borda);
   cursor: grab; transition: border-color 0.15s;
 }
+.cartao-tarefa { position: relative; }
 .cartao-tarefa:hover { border-color: var(--borda-forte); }
+.cartao-excluir {
+  position: absolute; top: 6px; right: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px; border: 0; border-radius: 7px;
+  background: var(--superficie-2); color: var(--texto-suave);
+  font: inherit; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+.cartao-tarefa:hover .cartao-excluir,
+.cartao-tarefa:focus-within .cartao-excluir,
+.cartao-excluir.confirmando { opacity: 1; }
+.cartao-excluir:hover { color: var(--erro); background: var(--erro-fundo); }
+.cartao-excluir.confirmando { color: #fff; background: var(--erro); padding: 4px 8px; }
+@media (hover: none) { .cartao-excluir { opacity: 1; } }
 .cartao-tarefa:focus-visible { outline: 2px solid var(--texto); outline-offset: 2px; }
 .cartao-tarefa.fantasma { opacity: 0.35; }
 .cartao-tarefa.concluida .cartao-tarefa-titulo { text-decoration: line-through; color: var(--texto-suave); }
-.cartao-tarefa-titulo { margin: 0; font-weight: 600; font-size: 0.93rem; line-height: 1.4; word-break: break-word; }
+.cartao-tarefa-titulo { padding-right: 22px; margin: 0; font-weight: 600; font-size: 0.93rem; line-height: 1.4; word-break: break-word; }
 .cartao-tarefa-rodape { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .marcador-soltar { height: 3px; border-radius: 3px; background: var(--texto); margin: -2px 0; }
 

@@ -30,7 +30,32 @@ function Avatar({ pessoa }) {
   )
 }
 
-function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, fantasma }) {
+// Lixeira no cartão: o primeiro clique pede confirmação, o segundo exclui
+function ExcluirCartao({ aoExcluir }) {
+  const [confirmando, setConfirmando] = useState(false)
+  useEffect(() => {
+    if (!confirmando) return
+    const t = setTimeout(() => setConfirmando(false), 4000)
+    return () => clearTimeout(t)
+  }, [confirmando])
+  return (
+    <button
+      type="button"
+      className={`cartao-excluir ${confirmando ? 'confirmando' : ''}`}
+      title="Excluir tarefa"
+      aria-label={confirmando ? 'Clique de novo para excluir' : 'Excluir tarefa'}
+      onClick={(e) => { e.stopPropagation(); confirmando ? aoExcluir() : setConfirmando(true) }}
+      onKeyDown={(e) => e.stopPropagation()}
+      draggable={false}
+      onDragStart={(e) => { e.preventDefault(); e.stopPropagation() }}
+    >
+      <Icone nome="lixeira" tamanho={14} />
+      {confirmando && <span>Excluir?</span>}
+    </button>
+  )
+}
+
+function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, aoExcluir, fantasma }) {
   const situacao = situacaoPrazo(tarefa.prazo, tarefa.concluida_em)
   return (
     <article
@@ -42,6 +67,7 @@ function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, fantasma }) 
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && aoAbrir(tarefa)}
     >
+      <ExcluirCartao aoExcluir={() => aoExcluir(tarefa)} />
       {tarefa.prioridade && tarefa.prioridade !== 'baixa' && (
         <span className={`prioridade prioridade-${tarefa.prioridade}`}>{PRIORIDADES[tarefa.prioridade]}</span>
       )}
@@ -165,6 +191,12 @@ export default function Tarefas() {
     setTarefas((atual) => [...atual, data])
   }
 
+  async function excluir(tarefa) {
+    setTarefas((atual) => atual.filter((t) => t.id !== tarefa.id))
+    const { error } = await supabase.from('tarefas').delete().eq('id', tarefa.id)
+    if (error) { setErro(traduzirErro(error)); carregar() }
+  }
+
   function aoPassar(e, coluna) {
     e.preventDefault()
     const cartoes = [...e.currentTarget.querySelectorAll('.cartao-tarefa:not(.fantasma)')]
@@ -259,6 +291,7 @@ export default function Tarefas() {
                           cores={coresEtiquetas}
                           aoAbrir={abrir}
                           aoArrastar={setArrastando}
+                          aoExcluir={excluir}
                         />
                       </div>
                     )
