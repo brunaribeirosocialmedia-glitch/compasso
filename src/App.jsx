@@ -61,7 +61,7 @@ export default function App() {
           <Route index element={<Inicio />} />
           <Route path="clientes" element={<Clientes />} />
           <Route path="clientes/:clienteId" element={<AreaCliente />}>
-            <Route index element={<Navigate to="tarefas" replace />} />
+            <Route index element={<Navigate to="notas" replace />} />
             <Route path="tarefas" element={<Tarefas />} />
             <Route path="calendario" element={<Calendario />} />
             <Route path="notas" element={<BlocoDeNotas />} />

@@ -21,7 +21,7 @@ export default function Configuracoes() {
     supabase.from('perfis').select('id, nome, email, papel, ativo').order('nome').then(({ data }) => setEquipe(data || []))
   }, [])
 
-  if (!permissoes.admin) return <Navigate to="../tarefas" replace />
+  if (!permissoes.admin) return <Navigate to="../notas" replace />
 
   async function executar(promessa, mensagem) {
     setErro('')

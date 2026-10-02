@@ -109,7 +109,7 @@ export default function Clientes() {
       ) : (
         <div className="grade-atalhos">
           {visiveis.map((c) => (
-            <Link key={c.id} to={`/clientes/${c.id}/tarefas`} className={`cartao atalho cartao-cliente ${c.ativo ? '' : 'arquivado'}`}>
+            <Link key={c.id} to={`/clientes/${c.id}/notas`} className={`cartao atalho cartao-cliente ${c.ativo ? '' : 'arquivado'}`}>
               <span className="cliente-inicial" style={{ background: c.cor || 'var(--texto-suave)' }}>
                 {c.nome.charAt(0).toUpperCase()}
               </span>
