@@ -5,6 +5,8 @@ import Modal, { BotaoExcluir } from '../Modal'
 import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
 import Icone from '../Icone'
 import { SeletorEtiquetas } from './Etiquetas'
+import Checklist from './Checklist'
+import Comentarios from './Comentarios'
 
 export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMudarEtiquetas, aoFechar, aoSalvar, aoExcluir }) {
   const [form, setForm] = useState({
@@ -69,6 +71,20 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
     setConcluidaEm(data.concluida_em)
     aoSalvar(data)
     setMovida(coluna.nome)
+  }
+
+  // Checklist grava na hora, como o status
+  const [checklist, setChecklist] = useState(tarefa.checklist || [])
+  async function mudarChecklist(lista) {
+    const anterior = checklist
+    setChecklist(lista)
+    setErro('')
+    const { data, error } = await supabase.from('tarefas').update({ checklist: lista }).eq('id', tarefa.id).select().single()
+    if (error) {
+      setChecklist(anterior)
+      return setErro(traduzirErro(error))
+    }
+    aoSalvar(data)
   }
 
   async function excluir() {
@@ -157,11 +173,24 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
           />
         </div>
 
+        <div className="campo">
+          <span>Checklist</span>
+          <Checklist itens={checklist} onChange={mudarChecklist} />
+        </div>
+
+        {tarefa.rotina_item_id && (
+          <p className="texto-suave origem-rotina"><Icone nome="repetir" tamanho={14} /> Criada pela rotina mensal deste cliente.</p>
+        )}
         {concluidaEm && (
           <p className="texto-suave">Concluída em {new Date(concluidaEm).toLocaleDateString('pt-BR')}.</p>
         )}
         {erro && <p className="alerta alerta-erro">{erro}</p>}
       </form>
+
+      <section className="secao-comentarios">
+        <h3><Icone nome="comentario" tamanho={16} /> Comentários</h3>
+        <Comentarios tarefa={tarefa} pessoas={pessoas} />
+      </section>
     </Modal>
   )
 }

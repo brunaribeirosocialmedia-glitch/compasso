@@ -9,6 +9,7 @@ import { PRIORIDADES } from '../../lib/cores'
 import Icone from '../Icone'
 import TarefaModal from './TarefaModal'
 import EditarColunas from './EditarColunas'
+import RotinaMensal from './RotinaMensal'
 import { Etiqueta, indexarEtiquetas } from './Etiquetas'
 
 const ESPACO = 1024
@@ -55,8 +56,11 @@ function ExcluirCartao({ aoExcluir }) {
   )
 }
 
-function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, aoExcluir, fantasma }) {
+function CartaoTarefa({ tarefa, pessoa, cores, comentarios = 0, aoAbrir, aoArrastar, aoExcluir, fantasma }) {
   const situacao = situacaoPrazo(tarefa.prazo, tarefa.concluida_em)
+  const itens = tarefa.checklist || []
+  const feitos = itens.filter((i) => i.feito).length
+  const indicadores = itens.length > 0 || comentarios > 0 || tarefa.rotina_item_id
   return (
     <article
       className={`cartao-tarefa ${tarefa.concluida_em ? 'concluida' : ''} ${fantasma ? 'fantasma' : ''}`}
@@ -77,13 +81,32 @@ function CartaoTarefa({ tarefa, pessoa, cores, aoAbrir, aoArrastar, aoExcluir, f
           {tarefa.etiquetas.map((e) => <Etiqueta key={e} nome={e} cor={cores[e.trim().toLowerCase()]?.cor} />)}
         </div>
       )}
-      {(tarefa.prazo || pessoa) && (
+      {(tarefa.prazo || pessoa || indicadores) && (
         <div className="cartao-tarefa-rodape">
-          {tarefa.prazo ? (
-            <span className={`prazo ${situacao}`}>
-              <Icone nome="calendario" tamanho={13} /> {situacao === 'hoje' ? 'Hoje' : formatarData(tarefa.prazo)}
-            </span>
-          ) : <span />}
+          <span className="grupo">
+            {tarefa.prazo && (
+              <span className={`prazo ${situacao}`}>
+                <Icone nome="calendario" tamanho={13} /> {situacao === 'hoje' ? 'Hoje' : formatarData(tarefa.prazo)}
+              </span>
+            )}
+            {indicadores && (
+              <span className="cartao-indicadores">
+                {itens.length > 0 && (
+                  <span className={feitos === itens.length ? 'completo' : ''} title="Checklist">
+                    <Icone nome="checklist" tamanho={13} /> {feitos}/{itens.length}
+                  </span>
+                )}
+                {comentarios > 0 && (
+                  <span title={`${comentarios} comentário${comentarios === 1 ? '' : 's'}`}>
+                    <Icone nome="comentario" tamanho={13} /> {comentarios}
+                  </span>
+                )}
+                {tarefa.rotina_item_id && (
+                  <span title="Da rotina mensal"><Icone nome="repetir" tamanho={13} /></span>
+                )}
+              </span>
+            )}
+          </span>
           <Avatar pessoa={pessoa} />
         </div>
       )}
@@ -140,20 +163,31 @@ export default function Tarefas() {
   const [arrastando, setArrastando] = useState(null)
   const [alvo, setAlvo] = useState(null)          // { coluna, indice }
   const [editandoColunas, setEditandoColunas] = useState(false)
+  const [vendoRotina, setVendoRotina] = useState(false)
   const [busca, setBusca] = useState('')
   const [filtroPessoa, setFiltroPessoa] = useState('')
   const [erro, setErro] = useState('')
 
   const [etiquetas, setEtiquetas] = useState([])
+  const [comentarios, setComentarios] = useState({})   // tarefa_id → quantidade
 
   const carregar = useCallback(async () => {
-    const [{ data: c }, { data: t }] = await Promise.all([
+    const [{ data: c }, { data: t }, { data: m }] = await Promise.all([
       supabase.from('tarefa_colunas').select('*').eq('cliente_id', cliente.id).order('ordem'),
       supabase.from('tarefas').select('*').eq('cliente_id', cliente.id).order('ordem'),
+      supabase.from('tarefa_comentarios').select('tarefa_id').eq('cliente_id', cliente.id),
     ])
     setColunas(c || [])
     setTarefas(t || [])
+    const contagem = {}
+    for (const { tarefa_id } of m || []) contagem[tarefa_id] = (contagem[tarefa_id] || 0) + 1
+    setComentarios(contagem)
   }, [cliente.id])
+
+  // cria as tarefas da rotina mensal que ainda faltam neste mês, depois carrega o quadro
+  useEffect(() => {
+    supabase.rpc('gerar_rotina_do_mes', { p_cliente_id: cliente.id }).then(() => carregar())
+  }, [cliente.id, carregar])
 
   // etiquetas salvas da agência; ao renomear/excluir, as tarefas também mudam
   const carregarEtiquetas = useCallback(async () => {
@@ -162,9 +196,8 @@ export default function Tarefas() {
   }, [])
   const coresEtiquetas = useMemo(() => indexarEtiquetas(etiquetas), [etiquetas])
 
-  useEffect(() => { carregar() }, [carregar])
   useEffect(() => { carregarEtiquetas() }, [carregarEtiquetas])
-  useTempoReal(['tarefas', 'tarefa_colunas'], cliente.id, carregar)
+  useTempoReal(['tarefas', 'tarefa_colunas', 'tarefa_comentarios'], cliente.id, carregar)
 
   const pessoaPorId = useMemo(() => Object.fromEntries(pessoas.map((p) => [p.id, p])), [pessoas])
 
@@ -252,6 +285,9 @@ export default function Tarefas() {
         <button className="botao botao-secundario botao-pequeno" onClick={() => setEditandoColunas(true)}>
           <Icone nome="config" tamanho={16} /> Colunas
         </button>
+        <button className="botao botao-secundario botao-pequeno" onClick={() => setVendoRotina(true)}>
+          <Icone nome="repetir" tamanho={16} /> Rotina mensal
+        </button>
       </div>
 
       {erro && <p className="alerta alerta-erro recuo" onClick={() => setErro('')}>{erro}</p>}
@@ -292,6 +328,7 @@ export default function Tarefas() {
                           aoAbrir={abrir}
                           aoArrastar={setArrastando}
                           aoExcluir={excluir}
+                          comentarios={comentarios[t.id]}
                         />
                       </div>
                     )
@@ -320,6 +357,14 @@ export default function Tarefas() {
           aoFechar={fechar}
           aoSalvar={(nova) => setTarefas((atual) => atual.map((t) => (t.id === nova.id ? nova : t)))}
           aoExcluir={(id) => { setTarefas((atual) => atual.filter((t) => t.id !== id)); fechar() }}
+        />
+      )}
+      {vendoRotina && (
+        <RotinaMensal
+          etiquetas={etiquetas}
+          aoMudarEtiquetas={async () => { await carregarEtiquetas(); await carregar() }}
+          aoFechar={() => setVendoRotina(false)}
+          aoMudar={carregar}
         />
       )}
       {editandoColunas && (

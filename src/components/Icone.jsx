@@ -27,6 +27,9 @@ const caminhos = {
   seta: 'M5 12h14M13 6l6 6-6 6',
   busca: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4',
   confirmar: 'M5 12.5l4.5 4.5L19 7',
+  repetir: 'M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4',
+  checklist: 'M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17M11 6h9M11 12h9M11 18h9',
+  comentario: 'M4 5h16v11H9l-5 4z',
 }
 
 export default function Icone({ nome, tamanho = 20 }) {

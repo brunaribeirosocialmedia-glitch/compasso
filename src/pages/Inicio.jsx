@@ -302,6 +302,12 @@ export default function Inicio() {
       .then(({ data }) => setClientes(Object.fromEntries((data || []).map((c) => [c.id, c]))))
   }, [])
 
+  // cria as tarefas da rotina mensal que faltam; se criou alguma, recarrega os painéis
+  const [versao, setVersao] = useState(0)
+  useEffect(() => {
+    supabase.rpc('gerar_rotina_do_mes').then(({ data }) => data > 0 && setVersao((v) => v + 1))
+  }, [])
+
   const metas = permissoes.prospeccao_liberada || permissoes.financeiro_liberado
 
   return (
@@ -311,9 +317,9 @@ export default function Inicio() {
         <h1>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ''}.</h1>
       </header>
 
-      <AgendaSemana clientes={clientes} />
+      <AgendaSemana key={`agenda-${versao}`} clientes={clientes} />
 
-      <div className="painel">
+      <div className="painel" key={`tarefas-${versao}`}>
         <TarefasAgencia clientes={clientes} />
         <MinhasTarefas usuarioId={session.user.id} />
       </div>
