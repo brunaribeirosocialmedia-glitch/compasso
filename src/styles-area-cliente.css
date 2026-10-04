@@ -396,3 +396,8 @@ textarea:focus, .entrada-simples:focus { border-color: var(--texto); box-shadow:
 .rotina-dia strong { font-size: 1.15rem; }
 .rotina-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .rodape-interno { margin: 8px -24px -22px; }
+
+/* Quadro ocupa a altura que sobra: a barra de rolagem lateral fica no fim da tela */
+.tarefas { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.area-conteudo:has(> .tarefas) { padding-bottom: 0; }
+.tarefas .board { padding-bottom: 20px; }
