@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase, traduzirErro } from '../../lib/supabase'
 import { PRIORIDADES } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../Modal'
-import BotaoSalvar, { pausaParaVer, useSalvar } from '../BotaoSalvar'
 import Icone from '../Icone'
 import { SeletorEtiquetas } from './Etiquetas'
 import Checklist from './Checklist'
@@ -20,36 +19,85 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
     etiquetas: tarefa.etiquetas || [],
   })
   const [erro, setErro] = useState('')
-  const { estado: estadoSalvar, rodar } = useSalvar()
   const campo = (nome) => ({ value: form[nome], onChange: (e) => setForm({ ...form, [nome]: e.target.value }) })
 
-  async function salvar(e) {
-    e.preventDefault()
-    if (form.data_inicio && form.prazo && form.data_inicio > form.prazo) {
-      return setErro('A data de início não pode ser depois do prazo.')
-    }
-    setErro('')
-    if (await rodar(gravar)) {
-      await pausaParaVer()
-      aoFechar()
-    }
-  }
+  // Salvamento automático: grava sozinho um instante depois que a pessoa para de digitar.
+  // O status tem gravação própria (mudarStatus), por isso fica de fora daqui.
+  const montarCampos = (f) => ({
+    titulo: f.titulo.trim() || tarefa.titulo,
+    descricao: f.descricao.trim() || null,
+    responsavel_id: f.responsavel_id || null,
+    prioridade: f.prioridade || null,
+    data_inicio: f.data_inicio || null,
+    prazo: f.prazo || null,
+    etiquetas: f.etiquetas,
+  })
+  const [salvamento, setSalvamento] = useState('salvo') // 'salvo' | 'pendente' | 'salvando' | 'erro'
+  const ultimoSalvo = useRef(JSON.stringify(montarCampos(form)))
+  const formAtual = useRef(form)
+  formAtual.current = form
+  const datasInvalidas = form.data_inicio && form.prazo && form.data_inicio > form.prazo
 
   async function gravar() {
-    const campos = {
-      titulo: form.titulo.trim(),
-      descricao: form.descricao.trim() || null,
-      coluna_id: form.coluna_id,
-      responsavel_id: form.responsavel_id || null,
-      prioridade: form.prioridade || null,
-      data_inicio: form.data_inicio || null,
-      prazo: form.prazo || null,
-      etiquetas: form.etiquetas,
+    const f = formAtual.current
+    if (f.data_inicio && f.prazo && f.data_inicio > f.prazo) return false
+    const campos = montarCampos(f)
+    const chave = JSON.stringify(campos)
+    if (chave === ultimoSalvo.current) {
+      setSalvamento('salvo')
+      return true
     }
+    setSalvamento('salvando')
     const { data, error } = await supabase.from('tarefas').update(campos).eq('id', tarefa.id).select().single()
-    if (error) return setErro(traduzirErro(error))
+    if (error) {
+      setSalvamento('erro')
+      setErro(traduzirErro(error))
+      return false
+    }
+    ultimoSalvo.current = chave
+    setErro('')
     aoSalvar(data)
+    // Se a pessoa continuou digitando enquanto gravava, ainda há algo pendente
+    setSalvamento(JSON.stringify(montarCampos(formAtual.current)) === chave ? 'salvo' : 'pendente')
     return true
+  }
+
+  useEffect(() => {
+    if (datasInvalidas) {
+      setErro('A data de início não pode ser depois do prazo.')
+      return
+    }
+    if (JSON.stringify(montarCampos(form)) === ultimoSalvo.current) return
+    setSalvamento('pendente')
+    const t = setTimeout(gravar, 800)
+    return () => clearTimeout(t)
+  }, [form]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!datasInvalidas && erro === 'A data de início não pode ser depois do prazo.') setErro('')
+  }, [datasInvalidas]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Avisa o navegador se a pessoa tentar fechar a aba com algo ainda não gravado
+  const pendente = salvamento === 'pendente' || salvamento === 'salvando' || salvamento === 'erro'
+  useEffect(() => {
+    if (!pendente) return
+    const aviso = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', aviso)
+    return () => window.removeEventListener('beforeunload', aviso)
+  }, [pendente])
+
+  // Ao fechar (X, Esc, clique fora ou botão), grava o que faltar antes de sair.
+  // Se a gravação falhar, a janela fica aberta com o aviso; fechar de novo sai mesmo assim.
+  const fechando = useRef(false)
+  const falhouAoFechar = useRef(false)
+  async function fechar() {
+    if (fechando.current) return
+    if (falhouAoFechar.current) return aoFechar()
+    fechando.current = true
+    const ok = await gravar()
+    fechando.current = false
+    if (ok) aoFechar()
+    else falhouAoFechar.current = true
   }
 
   // Muda o status na hora, sem precisar clicar em Salvar
@@ -96,18 +144,26 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
   return (
     <Modal
       titulo="Tarefa"
-      aoFechar={aoFechar}
+      aoFechar={fechar}
       largura={620}
       rodape={
         <>
           <BotaoExcluir aoConfirmar={excluir} texto="Excluir tarefa" />
           <span className="espaco" />
-          <button type="button" className="botao botao-secundario" onClick={aoFechar}>Cancelar</button>
-          <BotaoSalvar type="submit" form="form-tarefa" estado={estadoSalvar} disabled={!form.titulo.trim()} />
+          <span className={`status-salvamento ${salvamento}`} aria-live="polite">
+            {salvamento === 'salvo' && <><Icone nome="confirmar" tamanho={14} /> Tudo salvo</>}
+            {salvamento === 'pendente' && 'Alterações não salvas…'}
+            {salvamento === 'salvando' && 'Salvando…'}
+            {salvamento === 'erro' && 'Não foi possível salvar'}
+          </span>
+          {salvamento === 'erro' && (
+            <button type="button" className="botao botao-secundario" onClick={gravar}>Tentar de novo</button>
+          )}
+          <button type="button" className="botao botao-principal" onClick={fechar}>Fechar</button>
         </>
       }
     >
-      <form id="form-tarefa" className="formulario" onSubmit={salvar}>
+      <form id="form-tarefa" className="formulario" onSubmit={(e) => { e.preventDefault(); gravar() }}>
         <div className="campo">
           <span>Status</span>
           <div className="status-tarefa" role="radiogroup" aria-label="Status da tarefa">

@@ -15,7 +15,17 @@ function quando(dataHora) {
 export default function Comentarios({ tarefa, pessoas }) {
   const { session, permissoes } = useAuth()
   const [lista, setLista] = useState(null)
-  const [texto, setTexto] = useState('')
+  // Rascunho do comentário fica guardado neste navegador até ser enviado
+  const chaveRascunho = `compasso:rascunho-comentario:${tarefa.id}`
+  const [texto, setTexto] = useState(() => {
+    try { return localStorage.getItem(chaveRascunho) || '' } catch { return '' }
+  })
+  useEffect(() => {
+    try {
+      if (texto) localStorage.setItem(chaveRascunho, texto)
+      else localStorage.removeItem(chaveRascunho)
+    } catch { /* navegador sem armazenamento: segue sem rascunho */ }
+  }, [texto, chaveRascunho])
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
 

@@ -309,3 +309,7 @@ a.atalho:hover { border-color: var(--borda-forte); transform: translateY(-2px); 
   h1 { font-size: 1.5rem; }
   .cartao-acesso, .cartao-codigo { padding: 28px 20px; }
 }
+
+/* Indicador de salvamento automático (janela da tarefa) */
+.status-salvamento { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--texto-suave); }
+.status-salvamento.erro { color: var(--erro); }
