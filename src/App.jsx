@@ -25,6 +25,7 @@ import Entregas from './pages/financeiro/Entregas'
 import Calculadora from './pages/financeiro/Calculadora'
 import Gestao from './pages/gestao/Gestao'
 import Contratos from './pages/gestao/Contratos'
+import Obrigacoes from './pages/gestao/Obrigacoes'
 
 // Links antigos (#/financeiro/...) continuam funcionando
 function RedirecionarFinanceiro() {
@@ -90,6 +91,7 @@ export default function App() {
               <Route path=":secao" element={<Lancamentos />} />
             </Route>
             <Route path="contratos" element={<Contratos />} />
+            <Route path="obrigacoes" element={<Obrigacoes />} />
           </Route>
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
           <Route path="equipe" element={<Equipe />} />

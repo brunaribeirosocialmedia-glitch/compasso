@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 const ABAS = [
   { para: 'financeiro', nome: 'Financeiro' },
   { para: 'contratos', nome: 'Contratos' },
+  { para: 'obrigacoes', nome: 'Obrigações' },
 ]
 
 export default function Gestao() {

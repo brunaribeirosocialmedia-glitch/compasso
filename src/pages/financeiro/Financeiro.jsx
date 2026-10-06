@@ -41,6 +41,11 @@ export default function Financeiro() {
   const [clientes, setClientes] = useState([])
   const [versao, setVersao] = useState(0) // muda quando algo é salvo, para as telas recarregarem
 
+  // vencimentos de Obrigações que lançam no Financeiro entram como custos fixos
+  useEffect(() => {
+    supabase.rpc('gerar_obrigacoes').then(({ data }) => { if (data > 0) setVersao((v) => v + 1) })
+  }, [])
+
   useEffect(() => {
     supabase.from('clientes').select('id, nome, cor, ativo').order('nome').then(({ data }) => setClientes(data || []))
   }, [])

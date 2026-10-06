@@ -158,3 +158,7 @@
 .lista-sem-contrato { display: flex; flex-wrap: wrap; gap: 8px; }
 .lista-sem-contrato .botao { display: inline-flex; align-items: center; gap: 8px; }
 @media (max-width: 860px) { .contrato-servicos { max-width: none; white-space: normal; } }
+
+/* Gestão · Obrigações */
+.lanc-neutro { color: var(--texto-suave); background: var(--realce); }
+.obrigacao-tipo { font-size: 0.8rem; margin-left: 4px; }
