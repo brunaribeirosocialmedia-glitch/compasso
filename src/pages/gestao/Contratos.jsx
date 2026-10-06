@@ -6,6 +6,7 @@ import { useAutoSalvar, useFecharSalvando } from '../../lib/useAutoSalvar'
 import Modal, { BotaoExcluir } from '../../components/Modal'
 import StatusSalvamento from '../../components/StatusSalvamento'
 import Icone from '../../components/Icone'
+import ArquivoAnexo from '../../components/ArquivoAnexo'
 
 const BUCKET = 'contratos'
 
@@ -35,13 +36,6 @@ function vigencia(c) {
   return `${inicio} → ${formatarData(c.fim, opcoes)}`
 }
 
-async function abrirArquivo(caminho) {
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(caminho, 120)
-  if (error) return traduzirErro(error)
-  window.open(data.signedUrl, '_blank', 'noopener')
-  return ''
-}
-
 function paraFormulario(c) {
   return {
     cliente_id: c.cliente_id || '',
@@ -61,7 +55,6 @@ function paraFormulario(c) {
 function ContratoModal({ contrato, clientes, aoFechar, aoMudar, aoExcluir }) {
   const [form, setForm] = useState(() => paraFormulario(contrato))
   const [arquivo, setArquivo] = useState({ caminho: contrato.arquivo_caminho, nome: contrato.arquivo_nome })
-  const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
   const definir = (chave, valor) => setForm((f) => ({ ...f, [chave]: valor }))
   const campo = (chave) => ({ value: form[chave], onChange: (e) => definir(chave, e.target.value) })
@@ -106,43 +99,6 @@ function ContratoModal({ contrato, clientes, aoFechar, aoMudar, aoExcluir }) {
 
   const { estado, erroValidacao, salvarAgora } = useAutoSalvar(form, { montar, gravar })
   const fechar = useFecharSalvando(salvarAgora, aoFechar)
-
-  // O arquivo grava na hora, fora do salvamento automático
-  async function enviarArquivo(e) {
-    const escolhido = e.target.files?.[0]
-    e.target.value = ''
-    if (!escolhido) return
-    if (escolhido.size > 20 * 1024 * 1024) return setErro('O arquivo passa de 20 MB. Tente um PDF menor.')
-    setEnviando(true)
-    setErro('')
-    const nomeSeguro = escolhido.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w.-]+/g, '-')
-    const caminho = `${contrato.id}/${Date.now()}-${nomeSeguro}`
-    const { error: erroEnvio } = await supabase.storage.from(BUCKET).upload(caminho, escolhido, { contentType: escolhido.type || undefined })
-    if (erroEnvio) {
-      setEnviando(false)
-      return setErro(traduzirErro(erroEnvio))
-    }
-    const { data, error } = await supabase.from('contratos')
-      .update({ arquivo_caminho: caminho, arquivo_nome: escolhido.name }).eq('id', contrato.id).select().single()
-    setEnviando(false)
-    if (error) {
-      await supabase.storage.from(BUCKET).remove([caminho])
-      return setErro(traduzirErro(error))
-    }
-    if (arquivo.caminho) await supabase.storage.from(BUCKET).remove([arquivo.caminho])
-    setArquivo({ caminho, nome: escolhido.name })
-    aoMudar(data)
-  }
-
-  async function removerArquivo() {
-    setErro('')
-    const { data, error } = await supabase.from('contratos')
-      .update({ arquivo_caminho: null, arquivo_nome: null }).eq('id', contrato.id).select().single()
-    if (error) return setErro(traduzirErro(error))
-    await supabase.storage.from(BUCKET).remove([arquivo.caminho])
-    setArquivo({ caminho: null, nome: null })
-    aoMudar(data)
-  }
 
   async function excluir() {
     const { error } = await supabase.from('contratos').delete().eq('id', contrato.id)
@@ -228,30 +184,14 @@ function ContratoModal({ contrato, clientes, aoFechar, aoMudar, aoExcluir }) {
           </label>
         </div>
 
-        <div className="campo">
-          <span>Arquivo do contrato</span>
-          <div className="contrato-arquivo">
-            {arquivo.caminho ? (
-              <>
-                <button type="button" className="botao-link" onClick={async () => setErro(await abrirArquivo(arquivo.caminho))}>
-                  <Icone nome="anexo" tamanho={15} /> {arquivo.nome}
-                </button>
-                <span className="espaco" />
-                <label className="botao botao-secundario botao-pequeno">
-                  {enviando ? 'Enviando…' : 'Trocar'}
-                  <input type="file" hidden onChange={enviarArquivo} disabled={enviando} accept=".pdf,image/*,.doc,.docx" />
-                </label>
-                <button type="button" className="botao botao-fantasma botao-pequeno" onClick={removerArquivo}>Remover</button>
-              </>
-            ) : (
-              <label className="botao botao-secundario botao-pequeno">
-                <Icone nome="anexo" tamanho={15} /> {enviando ? 'Enviando…' : 'Anexar arquivo'}
-                <input type="file" hidden onChange={enviarArquivo} disabled={enviando} accept=".pdf,image/*,.doc,.docx" />
-              </label>
-            )}
-          </div>
-          <small className="texto-suave">PDF, imagem ou Word, até 20 MB. Só quem tem a Gestão liberada consegue abrir.</small>
-        </div>
+        <ArquivoAnexo
+          bucket={BUCKET}
+          tabela="contratos"
+          id={contrato.id}
+          arquivo={arquivo}
+          aoMudar={(data) => { setArquivo({ caminho: data.arquivo_caminho, nome: data.arquivo_nome }); aoMudar(data) }}
+          aoErro={setErro}
+        />
 
         {(erroValidacao || erro) && <p className="alerta alerta-erro">{erroValidacao || erro}</p>}
       </form>

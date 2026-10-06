@@ -162,3 +162,7 @@
 /* Gestão · Obrigações */
 .lanc-neutro { color: var(--texto-suave); background: var(--realce); }
 .obrigacao-tipo { font-size: 0.8rem; margin-left: 4px; }
+
+/* Gestão · Documentos */
+.grupo-documentos + .grupo-documentos { margin-top: 24px; }
+.acoes-linha .botao-link { display: inline-flex; align-items: center; gap: 4px; }

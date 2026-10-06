@@ -5,6 +5,7 @@ const ABAS = [
   { para: 'financeiro', nome: 'Financeiro' },
   { para: 'contratos', nome: 'Contratos' },
   { para: 'obrigacoes', nome: 'Obrigações' },
+  { para: 'documentos', nome: 'Documentos' },
 ]
 
 export default function Gestao() {
