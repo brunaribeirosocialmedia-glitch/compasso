@@ -8,6 +8,9 @@ import BarraMeta from '../components/BarraMeta'
 import Icone from '../components/Icone'
 import LegendaTarefas from '../components/LegendaTarefas'
 import { STATUS } from './prospeccao/comum'
+import { situacaoContrato } from './gestao/Contratos'
+import { situacaoDocumento } from './gestao/Documentos'
+import { seloVencimento } from './gestao/Obrigacoes'
 
 const emDias = (dias) => {
   const d = new Date()
@@ -244,6 +247,60 @@ function ResumoFinanceiro() {
   )
 }
 
+// O que precisa de atenção na Gestão (sem valores). Só aparece quando há algo.
+function AvisosGestao() {
+  const [itens, setItens] = useState(null)
+
+  useEffect(() => {
+    async function carregar() {
+      await supabase.rpc('gerar_obrigacoes')
+      const [{ data: oc }, { data: docs }, { data: cont }] = await Promise.all([
+        supabase.from('obrigacao_ocorrencias').select('id, vencimento, obrigacoes(nome, ativo)')
+          .eq('status', 'pendente').lte('vencimento', emDias(7)).order('vencimento'),
+        supabase.from('documentos').select('id, nome, validade, aviso_dias').not('validade', 'is', null),
+        supabase.from('contratos').select('id, nome_cliente, status, fim, renovacao_automatica, aviso_previo_dias, clientes(nome)').eq('status', 'ativo'),
+      ])
+      const lista = [
+        ...(oc || []).filter((o) => o.obrigacoes?.ativo).map((o) => ({
+          id: `o-${o.id}`, nome: o.obrigacoes.nome, tipo: 'Obrigação', para: '/gestao/obrigacoes', selo: seloVencimento(o.vencimento),
+        })),
+        ...(docs || []).map((d) => ({ id: `d-${d.id}`, nome: d.nome, tipo: 'Documento', para: '/gestao/documentos', selo: situacaoDocumento(d) })),
+        ...(cont || []).map((c) => ({
+          id: `c-${c.id}`, nome: c.clientes?.nome || c.nome_cliente, tipo: 'Contrato', para: '/gestao/contratos', selo: situacaoContrato(c),
+        })),
+      ].filter((i) => ['vencido', 'pendente'].includes(i.selo.classe))
+      // atrasados/vencidos primeiro
+      lista.sort((a, b) => (a.selo.classe === 'vencido' ? 0 : 1) - (b.selo.classe === 'vencido' ? 0 : 1))
+      setItens(lista)
+    }
+    carregar()
+  }, [])
+
+  if (!itens || itens.length === 0) return null
+  const visiveis = itens.slice(0, 6)
+
+  return (
+    <section className="cartao secao avisos-gestao">
+      <div className="linha-topo">
+        <h2><Icone nome="alerta" tamanho={18} /> Gestão: {itens.length === 1 ? '1 item precisa' : `${itens.length} itens precisam`} de atenção</h2>
+        <Link to="/gestao" className="botao-link">Abrir</Link>
+      </div>
+      <ul className="lista-minhas">
+        {visiveis.map((i) => (
+          <li key={i.id}>
+            <Link to={i.para}>
+              <span className="minha-tarefa-titulo">{i.nome}</span>
+              <span className="texto-suave minha-tarefa-cliente">{i.tipo}</span>
+              <span className={`selo-lancamento lanc-${i.selo.classe}`}>{i.selo.texto}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {itens.length > visiveis.length && <p className="texto-suave">E mais {itens.length - visiveis.length} na Gestão.</p>}
+    </section>
+  )
+}
+
 function MinhasTarefas({ usuarioId }) {
   const [tarefas, setTarefas] = useState(null)
 
@@ -316,6 +373,8 @@ export default function Inicio() {
         <p className="sobretitulo">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         <h1>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ''}.</h1>
       </header>
+
+      {permissoes.financeiro_liberado && <AvisosGestao />}
 
       <AgendaSemana key={`agenda-${versao}`} clientes={clientes} />
 

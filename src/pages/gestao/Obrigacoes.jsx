@@ -29,7 +29,7 @@ const SUGESTOES = [
 
 const diasAte = (data) => Math.round((deISO(data) - deISO(hojeISO())) / 86400000)
 
-function seloVencimento(vencimento) {
+export function seloVencimento(vencimento) {
   const dias = diasAte(vencimento)
   if (dias < 0) return { classe: 'vencido', texto: `Atrasada há ${-dias} dia${dias === -1 ? '' : 's'}` }
   if (dias === 0) return { classe: 'pendente', texto: 'Vence hoje' }

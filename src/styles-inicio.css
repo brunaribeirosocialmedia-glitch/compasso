@@ -64,3 +64,10 @@
   .contagem { padding: 10px; }
   .contagem strong { font-size: 1.3rem; }
 }
+
+/* Avisos da Gestão (sem valores) */
+.avisos-gestao { border-color: color-mix(in srgb, var(--aviso-texto) 35%, var(--borda)); }
+.avisos-gestao h2 { display: inline-flex; align-items: center; gap: 8px; }
+.avisos-gestao h2 svg { color: var(--aviso-texto); flex: none; }
+.avisos-gestao .linha-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.avisos-gestao .selo-lancamento { white-space: nowrap; }
