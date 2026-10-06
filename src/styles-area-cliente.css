@@ -401,3 +401,7 @@ textarea:focus, .entrada-simples:focus { border-color: var(--texto); box-shadow:
 .tarefas { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .area-conteudo:has(> .tarefas) { padding-bottom: 0; }
 .tarefas .board { padding-bottom: 20px; }
+
+/* Configurações: exclusão definitiva do cliente */
+.zona-perigo { border-color: color-mix(in srgb, var(--erro) 40%, var(--borda)); }
+.zona-perigo h2 { color: var(--erro); }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase, traduzirErro } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCliente } from '../../pages/AreaCliente'
@@ -16,6 +16,9 @@ export default function Configuracoes() {
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
   const { estado: estadoSalvar, rodar } = useSalvar()
+  const navigate = useNavigate()
+  const [confirmacao, setConfirmacao] = useState('')
+  const [excluindo, setExcluindo] = useState(false)
 
   useEffect(() => {
     supabase.from('perfis').select('id, nome, email, papel, ativo').order('nome').then(({ data }) => setEquipe(data || []))
@@ -47,6 +50,18 @@ export default function Configuracoes() {
   const alternarMembro = (pessoa) => membros.includes(pessoa.id)
     ? executar(supabase.from('cliente_membros').delete().eq('cliente_id', cliente.id).eq('usuario_id', pessoa.id))
     : executar(supabase.from('cliente_membros').insert({ cliente_id: cliente.id, usuario_id: pessoa.id }))
+
+  // Exclusão definitiva: pede o nome do cliente para confirmar
+  const nomeConfere = confirmacao.trim().toLowerCase() === cliente.nome.trim().toLowerCase()
+  async function excluirCliente() {
+    if (!nomeConfere || excluindo) return
+    setExcluindo(true)
+    setErro('')
+    const { error } = await supabase.from('clientes').delete().eq('id', cliente.id)
+    setExcluindo(false)
+    if (error) return setErro(traduzirErro(error))
+    navigate('/clientes', { replace: true })
+  }
 
   const equipeComum = equipe.filter((p) => p.papel !== 'admin' && p.ativo)
 
@@ -112,6 +127,22 @@ export default function Configuracoes() {
             cliente.ativo ? 'Cliente arquivado.' : 'Cliente reativado.')}
         >
           {cliente.ativo ? 'Arquivar' : 'Reativar'}
+        </button>
+      </section>
+
+      <section className="cartao secao zona-perigo">
+        <h2>Excluir cliente</h2>
+        <p className="texto-suave">
+          Apaga de vez a Área do Cliente de {cliente.nome}: tarefas, comentários, calendário, bloco de notas, quadro branco e rotina mensal.
+          Não dá para desfazer. Lançamentos do Financeiro, contratos e o prospect continuam guardados, só sem o vínculo com o cliente.
+          Se for só uma pausa, prefira arquivar.
+        </p>
+        <label className="campo">
+          <span>Para confirmar, digite o nome do cliente: <strong>{cliente.nome}</strong></span>
+          <input value={confirmacao} onChange={(e) => setConfirmacao(e.target.value)} autoComplete="off" />
+        </label>
+        <button className="botao botao-perigo alinhar-inicio" onClick={excluirCliente} disabled={!nomeConfere || excluindo}>
+          {excluindo ? 'Excluindo…' : 'Excluir cliente para sempre'}
         </button>
       </section>
 
