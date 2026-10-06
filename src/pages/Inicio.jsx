@@ -235,11 +235,11 @@ function ResumoFinanceiro() {
   if (!dados) return null
   return (
     <section className="cartao secao">
-      <div className="linha-topo"><h2>Financeiro</h2><Link to="/financeiro" className="botao-link">Abrir</Link></div>
+      <div className="linha-topo"><h2>Financeiro</h2><Link to="/gestao/financeiro" className="botao-link">Abrir</Link></div>
       <h3 className="subtitulo-painel">Faturamento do mês</h3>
       {dados.meta
         ? <BarraMeta atual={dados.faturamento} meta={Number(dados.meta.valor)} esperado={ritmoEsperado(competenciaDe())} />
-        : <SemMeta para="/financeiro" />}
+        : <SemMeta para="/gestao/financeiro" />}
     </section>
   )
 }

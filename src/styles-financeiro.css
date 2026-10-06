@@ -130,3 +130,31 @@
   .tabela-lancamentos .acoes-linha::before { display: none; }
   .tabela-lancamentos td.direita { justify-content: space-between; }
 }
+
+/* Gestão: o Financeiro virou uma aba; suas seções aparecem como subabas */
+.gestao-secao { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.subtopo { padding: 18px 32px 4px; display: flex; flex-direction: column; gap: 14px; }
+.subabas { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.subaba {
+  white-space: nowrap; padding: 6px 12px; border-radius: 99px;
+  color: var(--texto-suave); font-weight: 600; font-size: 0.88rem;
+  border: 1px solid var(--borda);
+}
+.subaba:hover { color: var(--texto); border-color: var(--borda-forte); }
+.subaba.active { color: var(--superficie); background: var(--texto); border-color: var(--texto); }
+@media (max-width: 860px) { .subtopo { padding: 16px 16px 4px; } }
+
+/* Gestão · Contratos */
+.lanc-vencido { color: var(--erro); background: var(--erro-fundo); }
+.contrato-cliente { display: inline-flex; align-items: center; gap: 8px; }
+.contrato-cliente svg { color: var(--texto-suave); }
+.contrato-servicos { max-width: 32ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bolinha-cliente { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
+.contrato-situacao { margin: 0; }
+.contrato-arquivo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.contrato-arquivo .botao-link { display: inline-flex; align-items: center; gap: 6px; overflow-wrap: anywhere; text-align: left; }
+.contrato-arquivo label.botao { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.titulo-secao { font-size: 0.95rem; margin: 0 0 10px; color: var(--texto-suave); }
+.lista-sem-contrato { display: flex; flex-wrap: wrap; gap: 8px; }
+.lista-sem-contrato .botao { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 860px) { .contrato-servicos { max-width: none; white-space: normal; } }

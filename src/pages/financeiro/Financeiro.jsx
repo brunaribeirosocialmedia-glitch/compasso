@@ -50,10 +50,9 @@ export default function Financeiro() {
 
   return (
     <FinanceiroContext.Provider value={{ competencia, clientes, versao, avisarMudanca: () => setVersao((v) => v + 1) }}>
-      <div className="area-cliente">
-        <header className="area-topo">
+      <div className="gestao-secao">
+        <header className="subtopo">
           <div className="linha-topo financeiro-topo">
-            <h1>Financeiro</h1>
             <div className="navegacao-mes">
               <button className="botao-icone" onClick={() => mudarMes(-1)} aria-label="Mês anterior"><Icone nome="voltar" /></button>
               <h2>{nomeMes(competencia)}</h2>
@@ -63,15 +62,13 @@ export default function Financeiro() {
               )}
             </div>
           </div>
-          <nav className="abas">
+          <nav className="subabas" aria-label="Seções do Financeiro">
             {ABAS.map((a) => (
-              <NavLink key={a.para} to={{ pathname: a.para, search: busca }} className="aba">{a.nome}</NavLink>
+              <NavLink key={a.para} to={{ pathname: a.para, search: busca }} className="subaba">{a.nome}</NavLink>
             ))}
           </nav>
         </header>
-        <div className="area-conteudo">
-          <Outlet />
-        </div>
+        <Outlet />
       </div>
     </FinanceiroContext.Provider>
   )

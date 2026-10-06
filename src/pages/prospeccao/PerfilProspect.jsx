@@ -163,7 +163,7 @@ export default function PerfilProspect() {
     if (error) return setErro(traduzirErro(error))
     const { data } = await supabase.from('prospects').update({ cliente_id: cliente.id }).eq('id', prospect.id).select('*, clientes(id, nome)').single()
     if (data) setProspect(data)
-    setAviso(`Área do Cliente de ${cliente.nome} criada.`)
+    setAviso(`Área do Cliente de ${cliente.nome} criada. O contrato já está em Gestão › Contratos.`)
   }
 
   async function excluir() {

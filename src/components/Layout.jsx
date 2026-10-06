@@ -25,7 +25,7 @@ export default function Layout() {
       para: '/prospeccao', nome: 'Prospecção', icone: 'prospeccao', trancada: !permissoes.prospeccao_liberada,
     },
     permissoes.pode_financeiro && {
-      para: '/financeiro', nome: 'Financeiro', icone: 'financeiro', trancada: !permissoes.financeiro_liberado,
+      para: '/gestao', nome: 'Gestão', icone: 'financeiro', trancada: !permissoes.financeiro_liberado,
     },
     permissoes.admin && { para: '/equipe', nome: 'Equipe', icone: 'equipe' },
   ].filter(Boolean)

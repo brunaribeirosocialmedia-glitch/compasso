@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import AreaProtegida from './components/AreaProtegida'
@@ -23,6 +23,14 @@ import VisaoGeral from './pages/financeiro/VisaoGeral'
 import Lancamentos from './pages/financeiro/Lancamentos'
 import Entregas from './pages/financeiro/Entregas'
 import Calculadora from './pages/financeiro/Calculadora'
+import Gestao from './pages/gestao/Gestao'
+import Contratos from './pages/gestao/Contratos'
+
+// Links antigos (#/financeiro/...) continuam funcionando
+function RedirecionarFinanceiro() {
+  const { pathname, search } = useLocation()
+  return <Navigate to={pathname.replace('/financeiro', '/gestao/financeiro') + search} replace />
+}
 
 function TelaCheia({ children }) {
   return (
@@ -72,13 +80,18 @@ export default function App() {
             <Route index element={<ListaProspects />} />
             <Route path=":prospectId" element={<PerfilProspect />} />
           </Route>
-          <Route path="financeiro" element={<AreaProtegida area="financeiro"><Financeiro /></AreaProtegida>}>
-            <Route index element={<Navigate to="visao-geral" replace />} />
-            <Route path="visao-geral" element={<VisaoGeral />} />
-            <Route path="entregas" element={<Entregas />} />
-            <Route path="calculadora" element={<Calculadora />} />
-            <Route path=":secao" element={<Lancamentos />} />
+          <Route path="gestao" element={<AreaProtegida area="financeiro"><Gestao /></AreaProtegida>}>
+            <Route index element={<Navigate to="financeiro" replace />} />
+            <Route path="financeiro" element={<Financeiro />}>
+              <Route index element={<Navigate to="visao-geral" replace />} />
+              <Route path="visao-geral" element={<VisaoGeral />} />
+              <Route path="entregas" element={<Entregas />} />
+              <Route path="calculadora" element={<Calculadora />} />
+              <Route path=":secao" element={<Lancamentos />} />
+            </Route>
+            <Route path="contratos" element={<Contratos />} />
           </Route>
+          <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
           <Route path="equipe" element={<Equipe />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

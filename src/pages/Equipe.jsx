@@ -50,7 +50,7 @@ export default function Equipe() {
       <header className="pagina-topo">
         <h1>Equipe</h1>
         <p className="texto-suave">
-          Defina quem pode entrar na Prospecção e no Financeiro. Mesmo com a permissão, a pessoa precisa digitar o código da área.
+          Defina quem pode entrar na Prospecção e na Gestão. Mesmo com a permissão, a pessoa precisa digitar o código da área.
         </p>
       </header>
 
@@ -63,7 +63,7 @@ export default function Equipe() {
               <th>Pessoa</th>
               <th>Papel</th>
               <th>Prospecção</th>
-              <th>Financeiro</th>
+              <th>Gestão</th>
               <th>Ativo</th>
             </tr>
           </thead>
@@ -94,7 +94,7 @@ export default function Equipe() {
                     <Chave rotulo={`Prospecção para ${m.nome}`} ligada={m.pode_prospeccao} onChange={(v) => alterar(m, { pode_prospeccao: v })} />
                   </td>
                   <td>
-                    <Chave rotulo={`Financeiro para ${m.nome}`} ligada={m.pode_financeiro} onChange={(v) => alterar(m, { pode_financeiro: v })} />
+                    <Chave rotulo={`Gestão para ${m.nome}`} ligada={m.pode_financeiro} onChange={(v) => alterar(m, { pode_financeiro: v })} />
                   </td>
                   <td>
                     <Chave rotulo={`${m.nome} ativo`} ligada={m.ativo} disabled={souEu} onChange={(v) => alterar(m, { ativo: v })} />

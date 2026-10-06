@@ -4,9 +4,9 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Icone from './Icone'
 
-const nomes = { prospeccao: 'Prospecção', financeiro: 'Financeiro' }
+const nomes = { prospeccao: 'Prospecção', financeiro: 'Gestão' }
 
-// Envolve Prospecção e Financeiro: pede o código antes de mostrar o conteúdo.
+// Envolve Prospecção e Gestão (no banco, a área da Gestão se chama 'financeiro'): pede o código antes de mostrar o conteúdo.
 // A proteção de verdade está no banco (RLS); esta tela é a porta de entrada.
 export default function AreaProtegida({ area, children }) {
   const { permissoes, atualizarPermissoes } = useAuth()
