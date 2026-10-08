@@ -27,6 +27,7 @@ import Gestao from './pages/gestao/Gestao'
 import Contratos from './pages/gestao/Contratos'
 import Obrigacoes from './pages/gestao/Obrigacoes'
 import Documentos from './pages/gestao/Documentos'
+import PaginaAprovacao from './pages/PaginaAprovacao'
 
 // Links antigos (#/financeiro/...) continuam funcionando
 function RedirecionarFinanceiro() {
@@ -43,6 +44,17 @@ function TelaCheia({ children }) {
 }
 
 export default function App() {
+  // Rota pública de aprovação do cliente (#/aprovar/<token>): é lida direto
+  // do hash, ANTES do portão de login, para o cliente abrir sem conta.
+  // Não mexe no fluxo de convite/recuperação do Supabase (hash diferente).
+  const casa = (typeof window !== 'undefined' ? window.location.hash : '')
+    .match(/^#\/aprovar\/([^/?#]+)/)
+  if (casa) return <PaginaAprovacao token={decodeURIComponent(casa[1])} />
+
+  return <AppAutenticado />
+}
+
+function AppAutenticado() {
   const { session, perfil, carregando, precisaDefinirSenha, sair } = useAuth()
 
   if (carregando) {

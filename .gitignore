@@ -3,3 +3,6 @@ SENHA-DO-BANCO.txt
 supabase/.temp/
 node_modules/
 dist/
+
+# arquivos temporários do Vite (build)
+vite.config.js.timestamp-*

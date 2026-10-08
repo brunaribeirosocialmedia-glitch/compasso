@@ -6,6 +6,7 @@ import { useCliente } from '../../pages/AreaCliente'
 import { CORES_CLIENTE } from '../../lib/cores'
 import { SeletorCor } from '../../pages/Clientes'
 import BotaoSalvar, { useSalvar } from '../BotaoSalvar'
+import Icone from '../Icone'
 
 export default function Configuracoes() {
   const { permissoes } = useAuth()
@@ -19,6 +20,9 @@ export default function Configuracoes() {
   const navigate = useNavigate()
   const [confirmacao, setConfirmacao] = useState('')
   const [excluindo, setExcluindo] = useState(false)
+  const [copiado, setCopiado] = useState(false)
+  const [regenerando, setRegenerando] = useState(false)
+  const [confirmaRegen, setConfirmaRegen] = useState(false)
 
   useEffect(() => {
     supabase.from('perfis').select('id, nome, email, papel, ativo').order('nome').then(({ data }) => setEquipe(data || []))
@@ -50,6 +54,33 @@ export default function Configuracoes() {
   const alternarMembro = (pessoa) => membros.includes(pessoa.id)
     ? executar(supabase.from('cliente_membros').delete().eq('cliente_id', cliente.id).eq('usuario_id', pessoa.id))
     : executar(supabase.from('cliente_membros').insert({ cliente_id: cliente.id, usuario_id: pessoa.id }))
+
+  // ---- Link de aprovação do cliente (a ponte com o Cadência) ----
+  const linkAprovacao = cliente.token_aprovacao
+    ? `${window.location.origin}${window.location.pathname}#/aprovar/${cliente.token_aprovacao}`
+    : ''
+
+  async function copiarLink() {
+    try {
+      await navigator.clipboard.writeText(linkAprovacao)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2000)
+    } catch {
+      setErro('Não deu para copiar. Selecione o link e copie manualmente.')
+    }
+  }
+
+  async function regenerarLink() {
+    setRegenerando(true)
+    setErro('')
+    setAviso('')
+    const { error } = await supabase.rpc('regenerar_token_aprovacao', { p_cliente_id: cliente.id })
+    setRegenerando(false)
+    setConfirmaRegen(false)
+    if (error) return setErro(traduzirErro(error))
+    setAviso('Link novo gerado. O link anterior parou de funcionar.')
+    recarregarCliente()
+  }
 
   // Exclusão definitiva: pede o nome do cliente para confirmar
   const nomeConfere = confirmacao.trim().toLowerCase() === cliente.nome.trim().toLowerCase()
@@ -89,6 +120,50 @@ export default function Configuracoes() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="cartao secao">
+        <h2>Link de aprovação do cliente</h2>
+        <p className="texto-suave">
+          Envie este link para {cliente.nome}. Com ele, o cliente vê as peças que estão em
+          <strong> “Em aprovação”</strong>, pode comentar e aprovar — sem precisar de login.
+          Ao aprovar, a peça passa para a coluna <strong>“Aprovado”</strong> aqui no Compasso.
+        </p>
+        {linkAprovacao ? (
+          <>
+            <div className="link-aprovacao">
+              <input readOnly value={linkAprovacao} onFocus={(e) => e.target.select()} />
+              <button type="button" className="botao botao-secundario botao-pequeno" onClick={copiarLink}>
+                <Icone nome={copiado ? 'confirmar' : 'anexo'} tamanho={15} /> {copiado ? 'Copiado!' : 'Copiar'}
+              </button>
+            </div>
+            {!confirmaRegen ? (
+              <button type="button" className="botao botao-fantasma botao-pequeno alinhar-inicio" onClick={() => setConfirmaRegen(true)}>
+                <Icone nome="repetir" tamanho={14} /> Gerar link novo
+              </button>
+            ) : (
+              <div className="confirma-regen">
+                <small className="texto-suave bloco">
+                  Gerar um link novo faz o link antigo <strong>parar de funcionar</strong>. Use se o link vazou ou mudou de contato.
+                </small>
+                <div className="linha-botoes">
+                  <button type="button" className="botao botao-secundario botao-pequeno" onClick={regenerarLink} disabled={regenerando}>
+                    {regenerando ? 'Gerando…' : 'Gerar mesmo assim'}
+                  </button>
+                  <button type="button" className="botao botao-fantasma botao-pequeno" onClick={() => setConfirmaRegen(false)}>Cancelar</button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="texto-suave">O link aparece aqui depois de aplicar a atualização do banco.</p>
+        )}
+        <style>{`
+          .link-aprovacao { display: flex; gap: 8px; align-items: center; margin: 4px 0 12px; }
+          .link-aprovacao input { flex: 1; font-size: 13px; padding: 9px 11px; border: 1px solid var(--borda, #e1e1e1); border-radius: 9px; color: var(--texto-suave, #666); background: var(--fundo-suave, #fafafc); }
+          .confirma-regen { margin-top: 8px; }
+          .confirma-regen .linha-botoes { display: flex; gap: 8px; margin-top: 8px; }
+        `}</style>
       </section>
 
       <section className="cartao secao">

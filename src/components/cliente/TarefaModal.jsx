@@ -6,11 +6,21 @@ import Icone from '../Icone'
 import { SeletorEtiquetas } from './Etiquetas'
 import Checklist from './Checklist'
 import Comentarios from './Comentarios'
+import MidiasPeca from './MidiasPeca'
+
+const FORMATOS = [
+  ['feed', 'Feed'],
+  ['carrossel', 'Carrossel'],
+  ['story', 'Story'],
+  ['video', 'Vídeo'],
+]
 
 export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMudarEtiquetas, aoFechar, aoSalvar, aoExcluir }) {
   const [form, setForm] = useState({
     titulo: tarefa.titulo,
     descricao: tarefa.descricao || '',
+    legenda: tarefa.legenda || '',
+    formato: tarefa.formato || '',
     coluna_id: tarefa.coluna_id,
     responsavel_id: tarefa.responsavel_id || '',
     prioridade: tarefa.prioridade || '',
@@ -22,10 +32,12 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
   const campo = (nome) => ({ value: form[nome], onChange: (e) => setForm({ ...form, [nome]: e.target.value }) })
 
   // Salvamento automático: grava sozinho um instante depois que a pessoa para de digitar.
-  // O status tem gravação própria (mudarStatus), por isso fica de fora daqui.
+  // O status, o checklist e as mídias têm gravação própria, por isso ficam de fora daqui.
   const montarCampos = (f) => ({
     titulo: f.titulo.trim() || tarefa.titulo,
     descricao: f.descricao.trim() || null,
+    legenda: f.legenda.trim() || null,
+    formato: f.formato || null,
     responsavel_id: f.responsavel_id || null,
     prioridade: f.prioridade || null,
     data_inicio: f.data_inicio || null,
@@ -135,6 +147,9 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
     aoSalvar(data)
   }
 
+  // Mídias da peça gravam na hora, como o checklist
+  const [midias, setMidias] = useState(tarefa.midias || [])
+
   async function excluir() {
     const { error } = await supabase.from('tarefas').delete().eq('id', tarefa.id)
     if (error) return setErro(traduzirErro(error))
@@ -191,8 +206,45 @@ export default function TarefaModal({ tarefa, colunas, pessoas, etiquetas, aoMud
         </label>
         <label className="campo">
           <span>Descrição</span>
-          <textarea rows={5} {...campo('descricao')} placeholder="Detalhes, links, referências…" />
+          <textarea rows={4} {...campo('descricao')} placeholder="Briefing interno, links, referências… (não vai para o cliente)" />
         </label>
+
+        {/* ---- A peça: o que o cliente vê e aprova ---- */}
+        <div className="campo peca-bloco">
+          <style>{`
+            .peca-bloco { border: 1px solid var(--borda, #e1e1e1); border-radius: 12px; padding: 16px; background: var(--fundo-suave, #fafafc); }
+            .peca-bloco-titulo { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; color: var(--texto, #040022); }
+            .peca-bloco .campo { margin-top: 12px; }
+            .peca-bloco .campo:first-of-type { margin-top: 10px; }
+          `}</style>
+          <div className="peca-bloco-titulo"><Icone nome="anexo" tamanho={15} /> Peça para aprovação</div>
+          <p className="texto-suave bloco">Arte, legenda e formato que o cliente vê na janela de aprovação.</p>
+
+          <label className="campo">
+            <span>Formato</span>
+            <select {...campo('formato')}>
+              <option value="">Sem formato</option>
+              {FORMATOS.map(([valor, nome]) => <option key={valor} value={valor}>{nome}</option>)}
+            </select>
+          </label>
+
+          <div className="campo">
+            <span>Arte / vídeo</span>
+            <MidiasPeca
+              clienteId={tarefa.cliente_id}
+              tarefaId={tarefa.id}
+              midias={midias}
+              onChange={setMidias}
+              aoSalvar={aoSalvar}
+              aoErro={setErro}
+            />
+          </div>
+
+          <label className="campo">
+            <span>Legenda (vai para o cliente)</span>
+            <textarea rows={5} {...campo('legenda')} placeholder="A legenda final do post, do jeitinho que vai ao ar." />
+          </label>
+        </div>
 
         <div className="grade-campos">
           <label className="campo">
