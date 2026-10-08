@@ -32,6 +32,7 @@ const caminhos = {
   alerta: 'M12 3 2 20h20zM12 10v4M12 17v.5',
   anexo: 'M20 11.5l-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.7 1.7 0 0 1-2.4-2.4L15 7',
   comentario: 'M4 5h16v11H9l-5 4z',
+  ideia: 'M9.5 20h5M10.5 22h3M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2.2h5.2c0-1 .4-1.7 1-2.2A6 6 0 0 0 12 3z',
 }
 
 export default function Icone({ nome, tamanho = 20 }) {

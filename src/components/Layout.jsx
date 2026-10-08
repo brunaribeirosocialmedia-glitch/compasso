@@ -21,6 +21,7 @@ export default function Layout() {
   const itens = [
     { para: '/', nome: 'Início', icone: 'inicio', fim: true },
     { para: '/clientes', nome: 'Área do Cliente', icone: 'clientes' },
+    { para: '/socorro', nome: 'Socorro', icone: 'ideia' },
     permissoes.pode_prospeccao && {
       para: '/prospeccao', nome: 'Prospecção', icone: 'prospeccao', trancada: !permissoes.prospeccao_liberada,
     },

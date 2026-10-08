@@ -28,6 +28,7 @@ import Contratos from './pages/gestao/Contratos'
 import Obrigacoes from './pages/gestao/Obrigacoes'
 import Documentos from './pages/gestao/Documentos'
 import PaginaAprovacao from './pages/PaginaAprovacao'
+import Socorro from './pages/Socorro'
 
 // Links antigos (#/financeiro/...) continuam funcionando
 function RedirecionarFinanceiro() {
@@ -108,6 +109,7 @@ function AppAutenticado() {
             <Route path="documentos" element={<Documentos />} />
           </Route>
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
+          <Route path="socorro" element={<Socorro />} />
           <Route path="equipe" element={<Equipe />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
